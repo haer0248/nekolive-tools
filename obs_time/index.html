@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="stylesheet" href="https://nekolive.net/assets/bootstrap/dist/css/bootstrap.min.css" />
+    </head>
+
+    <body>
+
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Signika+Negative&display=swap');
+
+            * {
+                margin: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+            }
+
+            body {
+                font-size: 76%;
+                font-family: 'Signika Negative', sans-serif;
+            }
+
+            div {
+                width: 250px;
+                height: 100px;
+                background: white;
+                font-size: 5em;
+                color: #FFFFFF;
+
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                margin-left: -125px;
+                margin-top: -50px;
+
+                text-align: center;
+                line-height: 100px;
+
+                background-color: #707070;
+                border-radius: 15px;
+
+                font-weight: bold;
+            }
+        </style>
+
+        <div data-time></div>
+
+        <script>
+            function startClock() {
+                const clock = document.querySelector('div[data-time]');
+
+                function pad(x) {
+                    return x < 10 ? '0' + x : x;
+                }
+
+                function updateTime() {
+                    const time = new Date();
+
+                    const h = pad(time.getHours());
+                    const m = pad(time.getMinutes());
+
+                    let current_time = '';
+                    current_time += [h, m].join(':');
+                    clock.innerHTML = current_time;
+                }
+
+                updateTime();
+
+                setInterval(updateTime, 1000);
+            }
+
+            document.addEventListener('DOMContentLoaded', startClock);
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

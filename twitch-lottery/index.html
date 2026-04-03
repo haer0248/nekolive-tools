@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="stylesheet" href="/static/lottery/styles.min.css" />
+    </head>
+
+    <body>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+        <div class="layout">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-logo">
+                    <h1>Twitch 訂閱者抽獎</h1>
+                    <div class="sub">by 猫又おにぎり</div>
+                    <div class="sub">Design by Claude</div>
+                </div>
+                <nav class="nav">
+                    <div class="nav-item active" onclick="showPage('home')" data-page="home">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" viewBox="0 0 24 24">
+                            <path d="M3 10L12 3L21 10V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V10Z" />
+                            <path d="M9 22V15C9 13.8954 9.89543 13 11 13H13C14.1046 13 15 13.8954 15 15V22" />
+                        </svg>
+                        使用教學
+                    </div>
+                    <div class="nav-item" onclick="showPage('sessions')" data-page="sessions">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <rect x="2" y="3" width="20" height="14" rx="2" />
+                            <path d="M8 21h8M12 17v4" />
+                        </svg>
+                        場次管理
+                    </div>
+                    <div class="nav-item" onclick="showPage('import')" data-page="import">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        抽獎名單
+                    </div>
+                    <div class="nav-item" onclick="showPage('settings')" data-page="settings">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                        </svg>
+                        加成設定
+                    </div>
+                    <div class="nav-item" onclick="showPage('prizes')" data-page="prizes">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <path d="M20 12V22H4V12" />
+                            <path d="M22 7H2v5h20V7z" />
+                            <path d="M12 22V7" />
+                            <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" />
+                            <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
+                        </svg>
+                        獎品列表
+                    </div>
+                    <div class="nav-item" onclick="showPage('draw')" data-page="draw">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 8v4l3 3" />
+                        </svg>
+                        開始抽獎
+                    </div>
+                    <div class="nav-item" onclick="showPage('history')" data-page="history">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5M12 7v5l4 2" />
+                        </svg>
+                        抽獎紀錄
+                    </div>
+                    <div class="nav-item" onclick="showPage('transfer')" data-page="transfer">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <path d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        匯入 / 匯出
+                    </div>
+                </nav>
+                <div class="sidebar-session">
+                    <div class="session-label">目前場次</div>
+                    <div class="session-title" id="sidebar-session-name">—</div>
+                </div>
+            </aside>
+
+            <main class="main">
+                <!-- Mobile topbar -->
+                <div class="mobile-topbar">
+                    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="mob-title" id="mob-page-title">使用教學</div>
+                    <div class="mob-session" id="mob-session-name">—</div>
+                </div>
+
+                <!-- HOME -->
+                <div id="page-home" class="page active">
+                    <div class="page-header">
+                        <h2>使用教學</h2>
+                        <p>這邊提供快速教學讓您更快瞭解如何進行抽獎。</p>
+                    </div>
+
+                    <div class="card">
+                        <h2>快速上手</h2>
+                        <div class="step-card">
+                            <h3>設定場次名稱（選填）</h3>
+                            <p>您可以設定抽獎場次名稱，用於這個小工具頁面判斷用，您可以日後回來這個小工具重新讀取抽獎場次。<br>抽獎紀錄及訂閱者名單不會儲存在伺服器上，僅會儲存在您的瀏覽器儲存空間中。</p>
+                        </div>
+                        <div class="step-card">
+                            <h3>建立抽獎名單</h3>
+                            <p>支援兩種方式匯入抽獎名單：</p>
+                            <ol>
+                                <li><strong>CSV 匯入</strong>：前往 Twitch 後台 → <a href="https://dashboard.twitch.tv/analytics/revenue-earnings/subscriptions" target="_blank">訂閱者分析</a>，點擊右上角「匯出」下載 CSV 檔案後上傳</li>
+                                <li><strong>手動輸入</strong>：直接填寫觀眾帳號、選擇訂閱層級後逐筆新增</li>
+                            </ol>
+                        </div>
+                        <div class="step-card">
+                            <h3>調整票數加成</h3>
+                            <p>前往「加成設定」頁面，預設設定如下：層級一 1 票、層級二 5 票、層級三 10 票。</p>
+                        </div>
+                        <div class="step-card">
+                            <h3>新增獎品（選填）</h3>
+                            <p>切換到「獎品列表」頁面新增要抽的獎品，可設定數量（一次抽多個相同獎品）。</p>
+                        </div>
+                        <div class="step-card">
+                            <h3>進行抽獎</h3>
+                            <p>切換到「開始抽獎」頁面 → 選擇獎品（可跳過）→ 點擊「開始抽獎」→ 等待動畫結束即可看到得獎者。</p>
+                            <p>若同個名單要進行多次抽獎，請注意是否需要啟用「排除中獎者」功能。</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>跨設備同步</h2>
+                        <div class="step-card">
+                            <h3>匯出場次資料</h3>
+                            <p>前往「匯入 / 匯出」頁面，選擇要匯出的場次，點擊「匯出 JSON」即可下載完整場次資料檔案。</p>
+                        </div>
+                        <div class="step-card">
+                            <h3>在其他設備匯入</h3>
+                            <p>在另一台設備開啟工具，前往「匯入 / 匯出」頁面，將剛才下載的 .json 檔案上傳，即可還原完整場次資料（含訂閱者名單、抽獎紀錄、獎品、設定）。</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>版權聲明</h2>
+                        <div class="step-card">
+                            <p>
+                                沒有版權，您可以自由使用、修改和分發。<br>
+                                您可以前往 <a href="https://github.com/haer0248/tools-page-help/blob/main/twitch-lottery.html">haer0248/tools-page-help/twitch-lottery.html</a> 檢視完整原始碼。<br>
+                                您可以依照自己的需求下載這個小工具後自由編輯、修改，沒有追蹤程式碼（僅 Google Analytics），可完全離線運行，不會收集任何資料。（除 Google 字體需連線外）<br>
+                            </p>
+                            <p>
+                                這個小工具是由我個人開發，完全免費提供給 Twitch 創作者使用。<br>
+                                如果您喜歡這個小工具，歡迎分享給更多人知道！也非常歡迎任何形式的支持與<a href="https://nekolive.net/haer0248" target="_blank" rel="noopener noreferrer">贊助</a>，讓我有動力持續開發更多實用的 Twitch 工具！
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>免責聲明</h2>
+                        <div class="step-card">
+                            <p>
+                                使用這個抽獎工具即表示您同意以下條款：
+                            <ol>
+                                <li>本工具完全免費提供，開發者不對使用過程中可能出現的任何問題負責。</li>
+                                <li>所有資料僅儲存在使用者的瀏覽器中，開發者無法存取或恢復任何資料。</li>
+                                <li>使用者應自行備份重要資料，開發者不承擔因資料遺失或損壞造成的任何損失。</li>
+                                <li>使用者應確保在合法和道德的範圍內使用本工具，開發者不對任何違法或不當使用負責。</li>
+                            </ol>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; margin: 3rem 0; color:var(--text3); font-size:13px;">
+                        祝您抽獎順利！<br>
+                        如果有使用上任何問題，歡迎隨時告訴我們！<br>
+                        Tool created by <a href="https://haer0248.me/" target="_blank" rel="noopener noreferrer">猫又おにぎり</a> & Design by <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
+                    </div>
+                </div>
+
+                <!-- IMPORT -->
+                <div id="page-import" class="page">
+                    <div class="page-header">
+                        <h2>抽獎名單</h2>
+                        <p>您可以透過 CSV 匯入或手動輸入的方式建立抽獎名單。</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="tab-bar">
+                            <button class="tab-btn active" onclick="switchImportTab('csv', this)">CSV 匯入</button>
+                            <button class="tab-btn" onclick="switchImportTab('manual', this)">手動輸入</button>
+                        </div>
+
+                        <!-- CSV Tab -->
+                        <div id="import-tab-csv" class="tab-panel active">
+                            <div class="card-title" style="margin-bottom:5px">訂閱者資料（CSV）</div>
+                            <p style="font-size:12px;color:var(--text3);margin-bottom:10px">
+                                支援逗號分隔，欄位有無引號皆可。可直接上傳 .csv 檔案，或貼上內容。<br>
+                                您可以直接由 <a href="https://dashboard.twitch.tv/analytics/revenue-earnings/subscriptions" target="_blank" rel="noopener noreferrer">Twitch 後台</a> 產出完整訂閱者名單。
+                            </p>
+                            <div class="row" style="margin-bottom:10px;gap:8px">
+                                <label class="btn btn-accent" style="cursor:pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                        <path d="M14 2v6h6M12 18v-6M9 15l3-3 3 3" />
+                                    </svg>
+                                    上傳 .csv 檔案
+                                    <input type="file" accept=".csv,text/csv" style="display:none" onchange="loadCSVFile(this)">
+                                </label>
+                                <span id="file-name-label" style="font-size:12px;color:var(--text3);"></span>
+                            </div>
+                            <textarea id="csv-input" rows="10" placeholder="Username,Subscribe Date,Current Tier,Tenure,Streak,Sub Type,Founder
+user1,2023-01-15,Tier1,18,12,Paid,No
+user2,2022-06-01,Tier2,30,30,Paid,Yes
+user3,2024-03-10,Tier3,6,3,Gift,No"></textarea>
+                            <div class="row" style="margin-top:10px">
+                                <button class="btn btn-primary" onclick="parseData()">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                    </svg>
+                                    匯入
+                                </button>
+                                <button class="btn" onclick="appendData()">附加匯入</button>
+                                <button class="btn btn-danger" onclick="clearData()">清除所有資料</button>
+                                <span id="import-msg" style="font-size:12px;color:var(--text3);"></span>
+                            </div>
+                        </div>
+
+                        <!-- Manual Tab -->
+                        <div id="import-tab-manual" class="tab-panel">
+                            <div class="card-title" style="margin-bottom:8px">手動新增訂閱者</div>
+                            <p style="font-size:12px;color:var(--text3);margin-bottom:1rem">直接輸入觀眾帳號，選擇訂閱層級後新增至名單。</p>
+
+                            <!-- Quick single add -->
+                            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
+                                <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px">快速新增單筆</div>
+                                <div class="manual-single-grid">
+                                    <div class="field-username">
+                                        <div class="field-label">帳號名稱 *</div>
+                                        <input type="text" id="manual-username" placeholder="帳號名稱" onkeydown="if(event.key==='Enter')addManualSingle()">
+                                    </div>
+                                    <div>
+                                        <div class="field-label">訂閱層級</div>
+                                        <select id="manual-tier">
+                                            <option value="Tier1">層級一</option>
+                                            <option value="Tier2">層級二</option>
+                                            <option value="Tier3">層級三</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div class="field-label">訂閱類型</div>
+                                        <select id="manual-subtype">
+                                            <option value="Paid">自主訂閱</option>
+                                            <option value="Gift">贈禮訂閱</option>
+                                            <option value="Prime">Prime</option>
+                                        </select>
+                                    </div>
+                                    <!-- <div>
+                                    <div class="field-label">創建者</div>
+                                    <select id="manual-founder">
+                                        <option value="No">否</option>
+                                        <option value="Yes">是</option>
+                                    </select>
+                                </div> -->
+                                    <!-- <div>
+                                    <div class="field-label">歷來訂閱</div>
+                                    <input type="number" id="manual-tenure" value="1" min="1" max="9999" style="text-align:center">
+                                </div> -->
+                                    <div class="field-submit">
+                                        <div class="field-label" style="color:transparent">-</div>
+                                        <button class="btn btn-primary" onclick="addManualSingle()">新增</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bulk text add -->
+                            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem">
+                                <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:6px">批量新增（一行一個帳號）</div>
+                                <p style="font-size:11px;color:var(--text3);margin-bottom:8px">每行一個帳號，可加上訂閱層級：<code style="color:var(--accent)">帳號,Tier1</code>、<code style="color:var(--accent)">帳號,Tier2</code>、<code style="color:var(--accent)">帳號,Tier3</code>（不填預設層級一）</p>
+                                <div style="display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:end;margin-bottom:8px">
+                                    <div>
+                                        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">預設訂閱類型</div>
+                                        <select id="bulk-default-type">
+                                            <option value="Paid">自主訂閱</option>
+                                            <option value="Gift">贈禮訂閱</option>
+                                            <option value="Prime">Prime</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <textarea id="bulk-manual-input" rows="6" placeholder="username1&#10;username2,Tier2&#10;username3,Tier3&#10;username4,Tier1"></textarea>
+                                <div class="row" style="margin-top:10px">
+                                    <button class="btn btn-primary" onclick="addBulkManual()">批量新增</button>
+                                    <button class="btn" onclick="addBulkManual(true)">附加新增</button>
+                                    <span id="manual-msg" style="font-size:12px;color:var(--text3)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="page-header">
+                        <h2>抽獎名單</h2>
+                        <p>在這邊可以快速調整及預覽抽獎者完整名單。</p>
+                    </div>
+                    <div id="table-section" style="display:none">
+                        <div class="stats-grid" id="stats-grid"></div>
+                        <div class="card" style="padding:0">
+                            <div class="table-wrap" style="border:none;border-radius:var(--radius-lg)">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>觀眾帳號</th>
+                                            <th>訂閱日期</th>
+                                            <th>訂閱層級</th>
+                                            <th>歷來訂閱</th>
+                                            <th>連續訂閱</th>
+                                            <th>訂閱類型</th>
+                                            <th>創建者</th>
+                                            <th>票數</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sub-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS -->
+                <div id="page-settings" class="page">
+                    <div class="page-header">
+                        <h2>加成設定</h2>
+                        <p>調整各訂閱層級與條件的票數加成，設定將會自動儲存及套用。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">快速規則</div>
+                        <div class="mult-row" style="border-bottom:none;padding:0">
+                            <div>
+                                <div style="font-size:13px;color:var(--text)">僅自主訂閱參與抽獎</div>
+                                <div style="font-size:11px;color:var(--text3);margin-top:2px">開啟後贈禮訂閱票數將被設定為 0。</div>
+                            </div>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0">
+                                <span id="recurring-only-label" style="font-size:12px;color:var(--text3)">關閉</span>
+                                <div id="recurring-only-toggle" onclick="toggleRecurringOnly()" style="width:36px;height:20px;border-radius:10px;background:var(--bg4);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background 0.2s">
+                                    <div id="recurring-only-knob" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text3);transition:all 0.2s"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">訂閱層級票數</div>
+                        <div class="mult-row">
+                            <div class="row" style="gap:8px"><span class="badge b-t1">層級一</span><span style="color:var(--text3);font-size:12px">基礎</span></div>
+                            <div class="mult-right"><input type="number" id="mult-t1" class="mult-input" value="1" min="0" max="9999" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">票</span></div>
+                        </div>
+                        <div class="mult-row">
+                            <div class="row" style="gap:8px"><span class="badge b-t2">層級二</span></div>
+                            <div class="mult-right"><input type="number" id="mult-t2" class="mult-input" value="5" min="0" max="9999" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">票</span></div>
+                        </div>
+                        <div class="mult-row">
+                            <div class="row" style="gap:8px"><span class="badge b-t3">層級三</span></div>
+                            <div class="mult-right"><input type="number" id="mult-t3" class="mult-input" value="10" min="0" max="9999" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">票</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">訂閱類型加成（乘數）</div>
+                        <div class="mult-row">
+                            <span class="badge b-gift">被贈禮訂閱</span>
+                            <div class="mult-right"><input type="number" id="mult-gift" class="mult-input" value="1" min="0" max="99" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">x</span></div>
+                        </div>
+                        <div class="mult-row">
+                            <span class="badge b-prime">Prime 訂閱</span>
+                            <div class="mult-right"><input type="number" id="mult-prime" class="mult-input" value="1" min="0" max="99" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">x</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">創建者額外乘數</div>
+                        <div class="mult-row">
+                            <span class="badge b-founder">創建者</span>
+                            <div class="mult-right"><input type="number" id="mult-founder" class="mult-input" value="1" min="1" max="99" onchange="saveMults()"><span class="mult-num" style="color:var(--text3)">x</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:5px">個別使用者票數覆蓋</div>
+                        <p style="font-size:12px;color:var(--text3);margin-bottom:1rem">設為 0 即排除該使用者。留空或刪除則套用層級預設票數。</p>
+                        <div id="custom-overrides-wrap">
+                            <div class="empty">請先匯入訂閱者資料</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DRAW -->
+                <div id="page-draw" class="page">
+                    <div class="page-header">
+                        <h2>開始抽獎</h2>
+                        <p id="draw-session-label" style="color:var(--text3);font-size:13px">—</p>
+                    </div>
+                    <div id="draw-no-data" class="card empty">尚未匯入任何訂閱者資料</div>
+                    <div id="draw-content" style="display:none">
+                        <div class="stats-grid" id="draw-stats"></div>
+                        <div class="draw-stage" id="draw-stage">
+                            <div class="draw-idle">按下「開始抽獎」</div>
+                        </div>
+                        <div class="row" style="justify-content:center;margin-bottom:1.25rem;gap:8px">
+                            <button class="btn btn-primary" id="draw-btn" onclick="startDraw()" style="padding:10px 28px;font-size:15px">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none" />
+                                </svg>
+                                開始抽獎
+                            </button>
+                            <button class="btn btn-accent" id="draw-again-btn" onclick="startDraw()" style="display:none;padding:10px 20px">再抽一次</button>
+                            <button class="btn" onclick="openPrizeModal()" id="prize-pick-btn" style="padding:10px 16px">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M20 12V22H4V12" />
+                                    <path d="M22 7H2v5h20V7z" />
+                                    <path d="M12 22V7" />
+                                </svg>
+                                <span id="prize-pick-label">選擇獎品</span>
+                            </button>
+                            <button class="btn" id="exclude-winner-btn" onclick="toggleExcludeWinner()" style="padding:10px 16px">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="4" />
+                                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                                    <line x1="18" y1="6" x2="22" y2="10" />
+                                    <line x1="22" y1="6" x2="18" y2="10" />
+                                </svg>
+                                <span id="exclude-winner-label">中獎可重複</span>
+                            </button>
+                        </div>
+                        <div class="card">
+                            <div class="row-between" style="margin-bottom:1rem">
+                                <div class="card-title" style="margin-bottom:0">中獎紀錄</div>
+                                <div class="row" style="gap:8px">
+                                    <span id="draw-history-count" style="font-size:12px;color:var(--text3)">0 筆</span>
+                                    <button class="btn btn-danger btn-sm" onclick="clearHistory()">清除</button>
+                                </div>
+                            </div>
+                            <div id="draw-history-list">
+                                <div class="empty">尚無紀錄</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">抽獎池分佈（前 15 筆）</div>
+                            <div id="pool-preview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTORY -->
+                <div id="page-history" class="page">
+                    <div class="page-header">
+                        <h2>抽獎紀錄</h2>
+                        <p id="history-session-label">—</p>
+                    </div>
+                    <div class="card">
+                        <div class="row-between" style="margin-bottom:1rem">
+                            <span style="font-size:12px;color:var(--text3);" id="history-count">0 筆紀錄</span>
+                            <button class="btn btn-danger btn-sm" onclick="clearHistory()">清除本場紀錄</button>
+                        </div>
+                        <div id="history-list">
+                            <div class="empty">尚無紀錄</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SESSIONS -->
+                <div id="page-sessions" class="page">
+                    <div class="page-header">
+                        <h2>場次管理</h2>
+                        <p>切換不同的抽獎場次，每個場次獨立儲存訂閱者與紀錄。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">新增場次</div>
+                        <div class="row">
+                            <input type="text" id="new-session-input" placeholder="場次名稱" style="flex:1">
+                            <button class="btn btn-accent" onclick="createSession()">建立</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">所有場次</div>
+                        <div id="sessions-list">
+                            <div class="empty">尚無場次</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRIZES -->
+                <div id="page-prizes" class="page">
+                    <div class="page-header">
+                        <h2>獎品列表</h2>
+                        <p>管理本場次的獎品，抽獎時可選擇對應獎項。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">新增獎品</div>
+                        <div style="display:grid;gap:10px">
+                            <div>
+                                <div style="font-size:12px;color:var(--text2);margin-bottom:5px">獎品名稱 <span style="color:var(--danger)">*</span></div>
+                                <input type="text" id="prize-name-input" placeholder="例：Steam 點數卡 $500">
+                            </div>
+                            <div>
+                                <div style="font-size:12px;color:var(--text2);margin-bottom:5px">說明／備註</div>
+                                <input type="text" id="prize-desc-input" placeholder="例：1 張，由主播決定得獎者">
+                            </div>
+                            <div>
+                                <div style="font-size:12px;color:var(--text2);margin-bottom:5px">數量</div>
+                                <input type="number" id="prize-qty-input" value="1" min="1" max="99" style="width:100px">
+                                <p style="font-size:12px;color:var(--text2);margin-bottom:0">若獎品有多項時，會直接抽出多個中獎者。</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="addPrize()">新增獎品</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="row-between" style="margin-bottom:1rem">
+                            <div class="card-title" style="margin-bottom:0">獎品清單</div>
+                            <button class="btn btn-danger btn-sm" onclick="clearPrizes()">清除全部</button>
+                        </div>
+                        <div id="prizes-list">
+                            <div class="empty">尚無獎品，請先新增</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRANSFER (匯入/匯出) -->
+                <div id="page-transfer" class="page">
+                    <div class="page-header">
+                        <h2>匯入 / 匯出</h2>
+                        <p>將場次資料匯出備份，或從其他設備匯入資料，方便跨設備同步。</p>
+                    </div>
+
+                    <!-- Export -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:8px">匯出場次資料</div>
+                        <p style="font-size:12px;color:var(--text3);margin-bottom:1rem">選擇要匯出的場次，將會下載包含訂閱者名單、抽獎紀錄、獎品及設定的完整 JSON 檔案。</p>
+
+                        <div style="margin-bottom:10px">
+                            <div style="font-size:12px;color:var(--text2);margin-bottom:5px">選擇場次</div>
+                            <select id="export-session-select">
+                                <option value="">— 請選擇 —</option>
+                            </select>
+                        </div>
+
+                        <div id="export-preview" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text2)">
+                        </div>
+
+                        <div class="row">
+                            <button class="btn btn-primary" onclick="exportSession()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                                </svg>
+                                匯出 JSON
+                            </button>
+                            <button class="btn" onclick="exportAllSessions()">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                                </svg>
+                                匯出全部場次
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Import -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:8px">匯入場次資料</div>
+                        <p style="font-size:12px;color:var(--text3);margin-bottom:1rem">上傳由本工具匯出的 .json 檔案，可還原完整場次資料。若場次名稱已存在，可選擇覆蓋或建立新場次。</p>
+
+                        <div class="import-drop-zone" id="import-drop-zone" onclick="document.getElementById('import-json-file').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                            <div class="dz-icon">📦</div>
+                            <div class="dz-title">點擊或拖曳 .json 檔案至此</div>
+                            <div class="dz-sub" id="drop-zone-sub">支援單一場次或全部場次的匯出檔案</div>
+                            <input type="file" id="import-json-file" accept=".json,application/json" style="display:none" onchange="loadImportFile(this)">
+                        </div>
+
+                        <div id="import-json-preview" style="display:none">
+                            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:12px;color:var(--text2)" id="import-preview-content">
+                            </div>
+                            <div class="row" style="margin-bottom:10px">
+                                <div>
+                                    <div style="font-size:12px;color:var(--text2);margin-bottom:5px">若場次名稱衝突</div>
+                                    <select id="import-conflict-mode">
+                                        <option value="overwrite">覆蓋現有場次</option>
+                                        <option value="rename">重新命名（加上 _匯入）</option>
+                                        <option value="skip">略過重複場次</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <button class="btn btn-primary" onclick="confirmImport()">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                                    </svg>
+                                    確認匯入
+                                </button>
+                                <button class="btn btn-danger" onclick="cancelImport()">取消</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger zone -->
+                    <div class="card" style="border-color:rgba(255,107,107,0.2)">
+                        <div class="card-title" style="color:var(--danger)">危險操作</div>
+                        <div class="mult-row" style="border-bottom:none;padding:0;margin-top:8px">
+                            <div>
+                                <div style="font-size:13px;color:var(--text)">清除所有場次資料</div>
+                                <div style="font-size:11px;color:var(--text3);margin-top:2px">清除所有場次資料，此操作不可復原。</div>
+                            </div>
+                            <button class="btn btn-danger btn-sm" onclick="clearAllData()" style="flex-shrink:0">清除全部</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <!-- Conflict Modal -->
+        <div class="modal-overlay" id="conflict-modal">
+            <div class="modal">
+                <h3 id="cm-title">發現重複使用者</h3>
+                <p class="mdesc" id="cm-desc"></p>
+                <div id="cm-choices"></div>
+                <div class="row" style="justify-content:flex-end;margin-top:1.25rem;gap:8px">
+                    <button class="btn" onclick="resolveKeepBoth()">兩筆都保留</button>
+                    <button class="btn btn-primary" onclick="resolveConflict()">保留選擇的</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prize Select Modal -->
+        <div class="modal-overlay" id="prize-modal">
+            <div class="modal">
+                <h3>選擇抽獎獎項</h3>
+                <p class="mdesc">選擇本輪要抽的獎品，或直接跳過</p>
+                <div id="pm-choices"></div>
+                <div class="row" style="justify-content:flex-end;margin-top:1.25rem;gap:8px">
+                    <button class="btn" onclick="closePrizeModal(true)">不指定獎品</button>
+                    <button class="btn btn-primary" onclick="confirmPrizeSelect()">確認選擇</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <script src="/static/lottery/app.min.js"></script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

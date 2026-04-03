@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="stylesheet" href="https://nekolive.net/assets/bootstrap/dist/css/bootstrap.min.css">
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            body {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            .main-box {
+                margin: 0 auto;
+                width: 100%;
+                font-weight: bold;
+                position: fixed;
+                align-items: center;
+                box-shadow: 0px -2px 6px 0px rgb(34, 34, 34);
+            }
+
+            .main-content {
+                display: flex;
+                align-items: center;
+                place-content: center;
+            }
+
+            marquee {
+                display: flex;
+            }
+
+            #messages {
+                left: 8%;
+                width: 100%;
+            }
+
+            #time {
+                display: none;
+                width: 10%;
+                text-align: center;
+            }
+
+            marquee span {
+                vertical-align: middle;
+                margin-left: 20px;
+            }
+
+            /* Config panel styles (non-OBS only) */
+            #content {
+                font-family: 'Noto Sans TC';
+                font-size: 16px;
+                margin-top: 30px;
+                margin-bottom: 60px;
+            }
+        </style>
+
+        <div class="container" id="content" style="display:none">
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        【幫助模式】幫助模式已自動啟用，在 OBS 使用此幫助將會自動隱藏，無需輸入任何設定。
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input class="form-check-input" type="checkbox" id="timer" name="timer">
+                        <label class="form-check-label" for="timer">顯示時間</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="position" class="form-label">跑馬燈位置</label>
+                        <select name="position" id="position" class="form-control">
+                            <option value="bottom">畫面底部</option>
+                            <option value="top">畫面頂部</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">文字</label>
+                        <button class="btn btn-outline-success btn-sm" type="button" id="add-text">新增</button>
+                        <p class="form-text">瀏覽器的網址限制長度為 <code>2,048</code>，如果您需要超過此字元數量，請 <a href="https://gist.github.com/haer0248/d0b581a17d5f804eba5714115a876349" target="_blank" rel="noopener noreferrer">下載檔案</a> 自行變更。</p>
+                        <div id="text-list"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direction" class="form-label">文字滾動方向</label>
+                        <select name="direction" id="direction" class="form-control">
+                            <option value="left">由右至左</option>
+                            <option value="right">由左至右</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">文字顏色</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <input type="color" class="form-control form-control-color" id="fontColorPicker" value="#000000">
+                            </span>
+                            <input type="text" class="form-control" id="font_color" name="font_color" placeholder="#000000">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">背景顏色（漸層）</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">
+                                <input type="color" class="form-control form-control-color" id="colorPicker" value="#FD783A">
+                            </span>
+                            <input type="text" class="form-control" id="color" name="color" placeholder="#FD783A">
+                            <span class="input-group-text">
+                                <input type="color" class="form-control form-control-color" id="colorEndPicker" value="#FF9797">
+                            </span>
+                            <input type="text" class="form-control" id="color_end" name="color_end" placeholder="#FF9797">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transparent" class="form-label">透明背景</label>
+                        <select name="transparent" id="transparent" class="form-control">
+                            <option value="false">否（預設）</option>
+                            <option value="true">是</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="angle" class="form-label">背景漸層方向</label>
+                        <select name="angle" id="angle" class="form-control">
+                            <option value="0">由上至下</option>
+                            <option value="270">由左至右（預設）</option>
+                            <option value="90">由右至左</option>
+                            <option value="180">由下至上</option>
+                        </select>
+                        <p class="form-text">您也可以自行調整網址中 <code>&amp;angle=&lt;數字&gt;</code> 來調整角度。</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="font" class="form-label">字體</label>
+                        <input type="text" class="form-control" id="font" name="font" placeholder="'Noto Sans TC', sans-serif">
+                        <p class="form-text">您的電腦中必須要有字體檔案。</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="size" class="form-label">大小</label>
+                        <input type="text" class="form-control" id="size" name="size" placeholder="120%">
+                        <p class="form-text">預設 120%，請輸入單位 <code>px</code>, <code>em</code> 或使用 <code>%</code></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="scrollamount" class="form-label">滾動速度</label>
+                        <input type="number" class="form-control" id="scrollamount" name="scrollamount" placeholder="6">
+                        <p class="form-text">預設 6</p>
+                    </div>
+
+                    <button type="button" id="btn-generate" class="btn btn-success">產生預覽</button>
+                    <p class="form-text">點選產生後，點選下方預覽就會自動複製，貼上到 OBS 後就可以使用了。</p>
+
+                    <textarea class="form-control" readonly id="preview" cols="30" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marquee display -->
+        <div class="main-box" id="main-box">
+            <div class="main-content">
+                <div id="time"></div>
+                <div id="messages" data-message></div>
+            </div>
+        </div>
+
+        <script>
+            // ── Helpers ──────────────────────────────────────────────────────────
+
+            function hex2rgb(hex) {
+                const default_ = 'rgb(0,0,0)';
+                if (!hex) return default_;
+                hex = hex.replace(/^#/, '');
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                if (hex.length !== 6) return default_;
+                const r = parseInt(hex.slice(0, 2), 16);
+                const g = parseInt(hex.slice(2, 4), 16);
+                const b = parseInt(hex.slice(4, 6), 16);
+                return `rgb(${r},${g},${b})`;
+            }
+
+            // ── Sanitize URL params before touching DOM/CSS ───────────────────────
+
+            function sanitizeColor(val, fallback) {
+                // Only allow valid hex colors (#RGB or #RRGGBB)
+                return /^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?$/.test(val) ? val : fallback;
+            }
+            function sanitizeSize(val, fallback) {
+                // Only allow number + px/em/rem/% units
+                return /^\d+(\.\d+)?(px|em|rem|%)$/.test(val) ? val : fallback;
+            }
+            function sanitizeAngle(val, fallback) {
+                // Only allow integers 0–360
+                const n = parseInt(val, 10);
+                return (!isNaN(n) && n >= 0 && n <= 360) ? String(n) : fallback;
+            }
+            function sanitizeScrollAmount(val, fallback) {
+                const n = parseInt(val, 10);
+                return (!isNaN(n) && n > 0 && n <= 100) ? String(n) : fallback;
+            }
+            function sanitizeFont(val, fallback) {
+                // Strip anything that could be used for CSS injection
+                // Allow: letters, digits, spaces, commas, quotes, hyphens, underscores, dots
+                return /^[a-zA-Z0-9\u4e00-\u9fff ,'".\-_]+$/.test(val) ? val : fallback;
+            }
+            function sanitizeDirection(val) {
+                return ['left', 'right'].includes(val) ? val : 'left';
+            }
+
+            const params = new URLSearchParams(window.location.search);
+
+            const isOBS = /OBS/.test(navigator.userAgent) || params.get('obs') === '1';
+
+            const position = params.get('position') === 'bottom' ? 'bottom: 0;' : 'top: 0;';
+            const font = sanitizeFont(params.get('font') || '', "'Noto Sans TC', sans-serif");
+            const timerEnable = (params.get('timerEnable') ?? '1') === '1';
+            const size = sanitizeSize(params.get('size') || '', '120%');
+            const transparent = params.get('transparent') === 'true';
+            const rawText = params.get('text') || '預設文字。[BR]第二行[BR]更多行';
+            const text = rawText.replace(/%5BBR%5D/gi, '[BR]');
+            const font_color = sanitizeColor(params.get('font_color') || '', '#000000');
+            const color = sanitizeColor(params.get('color') || '', '#FD783A');
+            const color_end = sanitizeColor(params.get('color_end') || '', '#FF9797');
+            const angle = sanitizeAngle(params.get('angle') || '', '270');
+            const direction = sanitizeDirection(params.get('direction') || '');
+            const scrollamount = sanitizeScrollAmount(params.get('scrollamount') || '', '6');
+
+            const messages = text.split('[BR]');
+
+            let show_color = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color);
+            let show_color_end = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color_end);
+
+            // ── Apply styles to marquee box ───────────────────────────────────────
+
+            const mainBox = document.getElementById('main-box');
+            mainBox.style.backgroundImage = `linear-gradient(${angle}deg, ${show_color} 0%, ${show_color_end} 100%)`;
+            mainBox.style.color = font_color;
+            mainBox.style.fontSize = size;
+            mainBox.style.fontFamily = font;
+            mainBox.style.cssText += position; // append top/bottom
+
+            document.getElementById('time').style.fontFamily = font;
+
+            // ── Build marquee element ─────────────────────────────────────────────
+
+            const messagesEl = document.getElementById('messages');
+            const marqueeEl = document.createElement('marquee');
+            marqueeEl.setAttribute('direction', direction);
+            marqueeEl.setAttribute('scrollamount', scrollamount);
+            marqueeEl.setAttribute('id', 'messages');
+
+            messages.forEach(msg => {
+                const span = document.createElement('span');
+                span.textContent = msg;  // XSS fix: never use innerHTML with URL params
+                marqueeEl.appendChild(span);
+            });
+
+            messagesEl.appendChild(marqueeEl);
+
+            // ── Clock ─────────────────────────────────────────────────────────────
+
+            const clock = document.getElementById('time');
+            if (timerEnable) {
+                clock.style.display = 'block';
+                const pad = x => x < 10 ? '0' + x : x;
+                const ticktock = () => {
+                    const t = new Date();
+                    clock.innerHTML = '🕒 ' + [pad(t.getHours()), pad(t.getMinutes())].join(':');
+                };
+                ticktock();
+                setInterval(ticktock, 1000);
+            }
+
+            // ── Config panel (non-OBS only) ───────────────────────────────────────
+
+            if (!isOBS) {
+                document.body.setAttribute('data-bs-theme', 'dark');
+                document.getElementById('content').style.display = '';
+
+                // Restore form values from URL params
+                document.getElementById('timer').checked = timerEnable;
+                document.getElementById('font').value = params.get('font') || "'Noto Sans TC', sans-serif";
+                document.getElementById('font_color').value = font_color;
+                document.getElementById('fontColorPicker').value = font_color;
+                document.getElementById('size').value = params.get('size') || '120%';
+                document.getElementById('color').value = color;
+                document.getElementById('colorPicker').value = color;
+                document.getElementById('color_end').value = color_end;
+                document.getElementById('colorEndPicker').value = color_end;
+                document.getElementById('scrollamount').value = scrollamount;
+
+                setSelectValue('position', params.get('position') || 'top');
+                setSelectValue('direction', direction);
+                setSelectValue('angle', angle);
+                setSelectValue('transparent', params.get('transparent') || 'false');
+
+                // Restore text list
+                let textLineId = 0;
+                messages.forEach(msg => addTextRow(msg));
+
+                // ── Text list add / remove ────────────────────────────────────────
+
+                document.getElementById('add-text').addEventListener('click', () => addTextRow(''));
+
+                document.getElementById('text-list').addEventListener('click', e => {
+                    const btn = e.target.closest('button[data-del]');
+                    if (btn) btn.closest('.input-group').remove();
+                });
+
+                // ── Color picker sync ─────────────────────────────────────────────
+
+                document.getElementById('fontColorPicker').addEventListener('input', e => {
+                    document.getElementById('font_color').value = e.target.value;
+                });
+                document.getElementById('colorPicker').addEventListener('input', e => {
+                    document.getElementById('color').value = e.target.value;
+                });
+                document.getElementById('colorEndPicker').addEventListener('input', e => {
+                    document.getElementById('color_end').value = e.target.value;
+                });
+
+                // ── Generate URL ──────────────────────────────────────────────────
+
+                document.getElementById('btn-generate').addEventListener('click', generateUrl);
+
+                document.getElementById('preview').addEventListener('click', function () {
+                    this.select();
+                    document.execCommand('copy');
+                    this.classList.add('is-valid');
+                    setTimeout(() => this.classList.remove('is-valid'), 3000);
+                });
+
+                // Auto-generate if URL already has params
+                if (params.has('text')) generateUrl();
+            }
+
+            // ── Helpers ───────────────────────────────────────────────────────────
+
+            function setSelectValue(id, val) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                [...el.options].forEach(o => { o.selected = o.value === val; });
+            }
+
+            function addTextRow(value) {
+                const div = document.createElement('div');
+                div.className = 'input-group mb-1';
+                div.innerHTML = `
+                <input type="text" name="text-pre[]" class="form-control" placeholder="預設文字" value="${escHtml(value)}">
+                <button class="btn btn-outline-danger" type="button" data-del>刪除</button>`;
+                document.getElementById('text-list').appendChild(div);
+            }
+
+            function escHtml(str) {
+                return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+
+            function generateUrl() {
+                const inputs = [...document.querySelectorAll('#text-list input[name="text-pre[]"]')];
+                const textVal = inputs.map(i => i.value).join('[BR]');
+
+                const url = new URL(location.href.split('?')[0]);
+                url.searchParams.set('text', textVal);
+                url.searchParams.set('timerEnable', document.getElementById('timer').checked ? '1' : '0');
+                url.searchParams.set('font', document.getElementById('font').value);
+                url.searchParams.set('font_color', document.getElementById('font_color').value);
+                url.searchParams.set('size', document.getElementById('size').value);
+                url.searchParams.set('color', document.getElementById('color').value);
+                url.searchParams.set('color_end', document.getElementById('color_end').value);
+                url.searchParams.set('angle', document.getElementById('angle').value);
+                url.searchParams.set('scrollamount', document.getElementById('scrollamount').value);
+                url.searchParams.set('direction', document.getElementById('direction').value);
+                url.searchParams.set('transparent', document.getElementById('transparent').value);
+                url.searchParams.set('position', document.getElementById('position').value);
+                url.searchParams.set('obs', '1');
+
+                document.getElementById('preview').value = url.toString();
+            }
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

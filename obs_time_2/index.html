@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            body {
+                font-family: 'Roboto Mono', 'Noto Sans JP', monospace;
+            }
+
+            html,
+            body {
+                font-size: 150%;
+                width: 100%;
+                height: 100%;
+            }
+
+            [data-time] {
+                color: #ffffff;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+                text-align: center;
+                height: 100vh;
+                text-shadow: rgba(0, 0, 0) 2px 2px 2px
+            }
+
+            pre {
+                color: #ffffff;
+                line-height: 1.5;
+            }
+
+            code {
+                border: solid;
+                border-radius: 0.25em;
+                padding-left: 2px;
+                padding-right: 2px;
+                color: #d63384;
+            }
+
+            .obs-hide {
+                display: none !important;
+            }
+        </style>
+
+        <pre id="help-text" class="obs-hide">[幫助]【OBS 直播畫面用】使用方式請參考 <a href="https://github.com/haer0248/tools-page-help/blob/main/obs_time_2.md" target="_blank" rel="noopener noreferrer">Github</a></pre>
+        <div data-time></div>
+
+        <script>
+            function getUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    opacity: params.get('opacity'),
+                    week: params.get('week'),
+                    preview: params.get('preview')
+                };
+            }
+
+            function initializePage() {
+                const params = getUrlParams();
+
+                if (params.opacity !== 'none') {
+                    const opacity = params.opacity ? params.opacity / 10 : 0.4;
+                    document.body.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+                }
+
+                const userAgent = navigator.userAgent;
+                if (!userAgent.includes('OBS')) {
+                    document.getElementById('help-text').classList.remove('obs-hide');
+                }
+
+                let weeks;
+                switch (params.week) {
+                    case 'jp':
+                        weeks = ['日', '月', '火', '水', '木', '金', '土'];
+                        break;
+                    case 'tw':
+                        weeks = ['日', '一', '二', '三', '四', '五', '六'];
+                        break;
+                    default:
+                        weeks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                        break;
+                }
+
+                return { weeks, showWeek: !!params.week };
+            }
+
+            function startClock() {
+                const { weeks, showWeek } = initializePage();
+                const clock = document.querySelector('div[data-time]');
+
+                function pad(x) {
+                    return x < 10 ? '0' + x : x;
+                }
+
+                function updateTime() {
+                    const time = new Date();
+
+                    const Y = pad(time.getFullYear());
+                    const M = pad(time.getMonth() + 1);
+                    const D = pad(time.getDate());
+                    const h = pad(time.getHours());
+                    const m = pad(time.getMinutes());
+                    const s = pad(time.getSeconds());
+                    const day = time.getDay();
+
+                    let current_time = '';
+                    current_time += '📆 ' + [Y, M, D].join('/');
+
+                    if (showWeek) {
+                        current_time += ` ${weeks[day]} `;
+                    } else {
+                        current_time += '  ';
+                    }
+
+                    current_time += '🕒 ' + [h, m, s].join(':');
+
+                    clock.innerHTML = current_time;
+                }
+
+                updateTime();
+
+                setInterval(updateTime, 1000);
+            }
+
+            document.addEventListener('DOMContentLoaded', startClock);
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

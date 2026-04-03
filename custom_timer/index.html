@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            body {
+                font-family: "Noto Sans JP", sans-serif;
+                width: 100%;
+                height: 100%;
+            }
+
+            .time_display {
+                font-size: 16px;
+            }
+
+            .info {
+                margin-bottom: 20px;
+            }
+
+            .highlight-purple {
+                color: #d800ff;
+            }
+
+            .highlight-blue {
+                color: #9361ff;
+            }
+
+            .highlight-red {
+                color: red;
+            }
+        </style>
+
+        <div id="info" class="info" style="display: none;">
+            <p>網址 ?y=<span id="year-display"></span>&m=1&d=1&t=00:00:00&msg=<span class="highlight-purple">距離 <span id="year-display2"></span> 還有</span>&end=<span class="highlight-blue">新年快樂！</span></p>
+            <p>時間未到會顯示<span class="highlight-purple">距離 <span id="year-display3"></span> 還有</span> (計時器) ，結束後會顯示<span class="highlight-blue">新年快樂！</span></p>
+        </div>
+
+        <div class="time_display" id="timer"></div>
+
+        <script>
+            // Function to get URL parameters
+            function getUrlParameter(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+
+            // Function to strip HTML tags (equivalent to PHP's strip_tags)
+            function stripTags(str) {
+                if (!str) return str;
+                return str.replace(/<[^>]*>/g, '');
+            }
+
+            // Get parameters from URL with defaults
+            const year = getUrlParameter('y') || (new Date().getFullYear() + 1);
+            const month = getUrlParameter('m') || '1';
+            const day = getUrlParameter('d') || '1';
+            const time = getUrlParameter('t') || '00:00:00';
+            const msg = stripTags(getUrlParameter('msg')) || `距離 ${year} 還有`;
+            const end = stripTags(getUrlParameter('end')) || '新年快樂！';
+            const stopAlert = getUrlParameter('stopalert');
+
+            // Update year displays in info section
+            document.getElementById('year-display').textContent = year;
+            document.getElementById('year-display2').textContent = year;
+            document.getElementById('year-display3').textContent = year;
+
+            // Hide info section if stopalert parameter is set
+            if (!stopAlert) {
+                document.getElementById('info').style.display = 'block';
+            }
+
+            // Create countdown date
+            const dateString = `${month} ${day}, ${year} ${time}`;
+            let countDownDate = new Date(dateString).getTime();
+            let x = setInterval(timer, 1000);
+
+            function timer() {
+                let now = new Date().getTime();
+                let distance = countDownDate - now;
+
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById("timer").innerHTML = end;
+                    return;
+                }
+
+                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Add leading zeros
+                if (hours < 10) {
+                    hours = "0" + hours;
+                }
+                if (minutes < 10) {
+                    minutes = "0" + minutes;
+                }
+                if (seconds < 10) {
+                    seconds = "0" + seconds;
+                }
+
+                document.getElementById("timer").innerHTML = `${msg} ${days} 天 ${hours} 時 ${minutes} 分 ${seconds} 秒`;
+            }
+
+            // Start the timer immediately
+            timer();
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

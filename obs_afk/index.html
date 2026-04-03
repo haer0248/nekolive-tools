@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+        <style>
+            @font-face {
+                font-family: '俐方體11號';
+                src: url('/static/cubic_11.woff2') format('woff2'), url('/static/cubic_11.woff') format('woff');
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.2em;
+            }
+
+            .chars {
+                display: flex;
+                gap: 0.15em;
+            }
+
+            .subtitle {
+                font-size: 48px;
+                font-weight: 400;
+                font-family: '俐方體11號', sans-serif;
+                color: #ffffff;
+                text-shadow:
+                    rgb(0, 0, 0) 4px 0px, rgb(0, 0, 0) 3.96879px 0.498699px, rgb(0, 0, 0) 3.87565px 0.989615px, rgb(0, 0, 0) 3.72203px 1.46509px, rgb(0, 0, 0) 3.51033px 1.9177px, rgb(0, 0, 0) 3.24385px 2.34039px, rgb(0, 0, 0) 2.92676px 2.72656px, rgb(0, 0, 0) 2.56399px 3.07018px, rgb(0, 0, 0) 2.16121px 3.36589px, rgb(0, 0, 0) 1.72471px 3.60907px, rgb(0, 0, 0) 1.26129px 3.79594px, rgb(0, 0, 0) 0.778191px 3.92357px, rgb(0, 0, 0) 0.282949px 3.98998px, rgb(0, 0, 0) -0.216709px 3.99413px, rgb(0, 0, 0) -0.712984px 3.93595px, rgb(0, 0, 0) -1.19814px 3.81635px, rgb(0, 0, 0) -1.66459px 3.63719px, rgb(0, 0, 0) -2.10507px 3.40128px, rgb(0, 0, 0) -2.5127px 3.1123px, rgb(0, 0, 0) -2.88112px 2.77474px, rgb(0, 0, 0) -3.20458px 2.39389px, rgb(0, 0, 0) -3.47803px 1.97568px, rgb(0, 0, 0) -3.69721px 1.52665px, rgb(0, 0, 0) -3.85870px 1.05379px, rgb(0, 0, 0) -3.95997px 0.564479px, rgb(0, 0, 0) -3.99945px 0.0663677px, rgb(0, 0, 0) -3.97652px -0.432781px, rgb(0, 0, 0) -3.89154px -0.925174px, rgb(0, 0, 0) -3.74583px -1.40314px, rgb(0, 0, 0) -3.54167px -1.8592px, rgb(0, 0, 0) -3.28224px -2.28625px, rgb(0, 0, 0) -2.97159px -2.67762px, rgb(0, 0, 0) -2.61458px -3.02721px, rgb(0, 0, 0) -2.21676px -3.32956px, rgb(0, 0, 0) -1.78435px -3.57996px, rgb(0, 0, 0) -1.3241px -3.77449px, rgb(0, 0, 0) -0.843187px -3.91012px, rgb(0, 0, 0) -0.349111px -3.98474px, rgb(0, 0, 0) 0.150409px -3.99717px, rgb(0, 0, 0) 0.647581px -3.94723px, rgb(0, 0, 0) 1.13465px -3.8357px, rgb(0, 0, 0) 1.60401px -3.66431px, rgb(0, 0, 0) 2.04834px -3.43574px, rgb(0, 0, 0) 2.46071px -3.15356px, rgb(0, 0, 0) 2.83468px -2.82216px, rgb(0, 0, 0) 3.16442px -2.44673px, rgb(0, 0, 0) 3.44477px -2.03312px, rgb(0, 0, 0) 3.67137px -1.58778px, rgb(0, 0, 0) 3.84068px -1.11766px, rgb(0, 0, 0) 3.95006px -0.630106px, rgb(0, 0, 0) 3.9978px -0.132717px;
+                opacity: 0;
+                letter-spacing: 0.05em;
+            }
+
+            .char {
+                font-size: 180px;
+                font-weight: 500;
+                font-family: '俐方體11號', sans-serif;
+                color: #ffffff;
+                text-shadow:
+                    rgb(0, 0, 0) 8px 0px, rgb(0, 0, 0) 7.93758px 0.997398px, rgb(0, 0, 0) 7.7513px 1.97923px, rgb(0, 0, 0) 7.44406px 2.93018px, rgb(0, 0, 0) 7.02066px 3.8354px, rgb(0, 0, 0) 6.4877px 4.68078px, rgb(0, 0, 0) 5.85351px 5.45311px, rgb(0, 0, 0) 5.12798px 6.14035px, rgb(0, 0, 0) 4.32242px 6.73177px, rgb(0, 0, 0) 3.44941px 7.21814px, rgb(0, 0, 0) 2.52258px 7.59188px, rgb(0, 0, 0) 1.55638px 7.84714px, rgb(0, 0, 0) 0.565898px 7.97996px, rgb(0, 0, 0) -0.433417px 7.98825px, rgb(0, 0, 0) -1.42597px 7.87189px, rgb(0, 0, 0) -2.39627px 7.63269px, rgb(0, 0, 0) -3.32917px 7.27438px, rgb(0, 0, 0) -4.21013px 6.80256px, rgb(0, 0, 0) -5.02539px 6.22459px, rgb(0, 0, 0) -5.76223px 5.54948px, rgb(0, 0, 0) -6.40915px 4.78778px, rgb(0, 0, 0) -6.95606px 3.95136px, rgb(0, 0, 0) -7.39442px 3.05329px, rgb(0, 0, 0) -7.71739px 2.10757px, rgb(0, 0, 0) -7.91994px 1.12896px, rgb(0, 0, 0) -7.9989px 0.132735px, rgb(0, 0, 0) -7.95304px -0.865561px, rgb(0, 0, 0) -7.78307px -1.85035px, rgb(0, 0, 0) -7.49165px -2.80627px, rgb(0, 0, 0) -7.08333px -3.71839px, rgb(0, 0, 0) -6.56448px -4.57249px, rgb(0, 0, 0) -5.94318px -5.35524px, rgb(0, 0, 0) -5.22915px -6.05442px, rgb(0, 0, 0) -4.43352px -6.65912px, rgb(0, 0, 0) -3.5687px -7.15992px, rgb(0, 0, 0) -2.6482px -7.54898px, rgb(0, 0, 0) -1.68637px -7.82024px, rgb(0, 0, 0) -0.698222px -7.96947px, rgb(0, 0, 0) 0.300817px -7.99434px, rgb(0, 0, 0) 1.29516px -7.89446px, rgb(0, 0, 0) 2.2693px -7.67139px, rgb(0, 0, 0) 3.20802px -7.32862px, rgb(0, 0, 0) 4.09668px -6.87148px, rgb(0, 0, 0) 4.92142px -6.30711px, rgb(0, 0, 0) 5.66936px -5.64432px, rgb(0, 0, 0) 6.32883px -4.89346px, rgb(0, 0, 0) 6.88954px -4.06623px, rgb(0, 0, 0) 7.34274px -3.17556px, rgb(0, 0, 0) 7.68136px -2.23532px, rgb(0, 0, 0) 7.90012px -1.26021px, rgb(0, 0, 0) 7.9956px -0.265434px;
+                opacity: 0;
+            }
+        </style>
+        <div class="wrapper">
+            <div class="chars" id="chars"></div>
+            <div class="subtitle" id="subtitle"></div>
+        </div>
+
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+
+            (function () {
+                const text = urlParams.get('text');
+                const string = text || '離席中...';
+
+                const container = document.getElementById('chars');
+                [...string].forEach(ch => {
+                    const span = document.createElement('span');
+                    span.className = 'char';
+                    span.textContent = ch;
+                    container.appendChild(span);
+                });
+
+                const subtitle = urlParams.get('subtitle');
+                const subtitleEl = document.getElementById('subtitle');
+                subtitleEl.textContent = subtitle || 'Be right back...';
+            })();
+
+            document.addEventListener('DOMContentLoaded', function () {
+                (function () {
+                    const chars = document.querySelectorAll('.char');
+                    const subtitleEl = document.getElementById('subtitle');
+                    const FADE_CHAR = 400;
+                    const CHAR_DELAY = 100;
+                    const SHOW_DURATION = 10000;
+                    const FADE_OUT = 800;
+
+                    function fadeInChar(el, delay) {
+                        return new Promise(resolve => {
+                            setTimeout(() => {
+                                el.style.transition = `opacity ${FADE_CHAR}ms ease`;
+                                el.style.opacity = '1';
+                                setTimeout(resolve, FADE_CHAR);
+                            }, delay);
+                        });
+                    }
+
+                    function flicker() {
+                        return new Promise(resolve => {
+                            const steps = [{
+                                opacity: '0.3',
+                                duration: 350
+                            },
+                            {
+                                opacity: '1',
+                                duration: 300
+                            },
+                            {
+                                opacity: '0.2',
+                                duration: 400
+                            },
+                            {
+                                opacity: '0.9',
+                                duration: 250
+                            },
+                            {
+                                opacity: '0.1',
+                                duration: 350
+                            },
+                            {
+                                opacity: '0.8',
+                                duration: 300
+                            },
+                            {
+                                opacity: '0',
+                                duration: 500
+                            },
+                            ];
+                            let t = 0;
+                            steps.forEach(({
+                                opacity,
+                                duration
+                            }) => {
+                                setTimeout(() => {
+                                    chars.forEach(el => {
+                                        el.style.transition = `opacity ${duration}ms ease`;
+                                        el.style.opacity = opacity;
+                                    });
+                                    subtitleEl.style.transition = `opacity ${duration}ms ease`;
+                                    subtitleEl.style.opacity = opacity;
+                                }, t);
+                                t += duration;
+                            });
+                            setTimeout(resolve, t);
+                        });
+                    }
+
+                    async function cycle() {
+                        chars.forEach(el => {
+                            el.style.transition = 'none';
+                            el.style.opacity = '0';
+                        });
+                        subtitleEl.style.transition = 'none';
+                        subtitleEl.style.opacity = '0';
+                        await new Promise(r => setTimeout(r, 50));
+
+                        for (let i = 0; i < chars.length; i++) {
+                            await fadeInChar(chars[i], i * CHAR_DELAY);
+                        }
+
+                        subtitleEl.style.transition = `opacity ${FADE_CHAR}ms ease`;
+                        subtitleEl.style.opacity = '1';
+
+                        await new Promise(r => setTimeout(r, SHOW_DURATION));
+                        await flicker();
+                        await new Promise(r => setTimeout(r, 400));
+                        cycle();
+                    }
+
+                    cycle();
+                })();
+            });
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

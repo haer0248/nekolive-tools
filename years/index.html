@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+
+            * {
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                font-size: 100%;
+            }
+
+            body {
+                font-family: "Noto Sans JP", sans-serif;
+            }
+
+            .time_display {
+                width: 100%;
+                font-size: 50px;
+                color: var(--timer-font-color, #ffffff);
+                font-weight: bold;
+                text-align-last: center;
+                text-shadow:
+                    var(--timer-outline-color, #202020) 2px 0px 0px,
+                    var(--timer-outline-color, #202020) 1.75517px 0.958851px 0px,
+                    var(--timer-outline-color, #202020) 1.0806px 1.68294px 0px,
+                    var(--timer-outline-color, #202020) 0.141474px 1.99499px 0px,
+                    var(--timer-outline-color, #202020) -0.832294px 1.81859px 0px,
+                    var(--timer-outline-color, #202020) -1.60229px 1.19694px 0px,
+                    var(--timer-outline-color, #202020) -1.97999px 0.28224px 0px,
+                    var(--timer-outline-color, #202020) -1.87291px -0.701566px 0px,
+                    var(--timer-outline-color, #202020) -1.30729px -1.51361px 0px,
+                    var(--timer-outline-color, #202020) -0.421592px -1.95506px 0px,
+                    var(--timer-outline-color, #202020) 0.567324px -1.91785px 0px,
+                    var(--timer-outline-color, #202020) 1.41734px -1.41108px 0px,
+                    var(--timer-outline-color, #202020) 1.92034px -0.558831px 0px;
+            }
+        </style>
+
+        <p class="time_display" id="timer"></p>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+
+            var years = urlParams.get('y');
+            if (!years) years = (new Date().getFullYear() + 1);
+
+            var end_message = urlParams.get('end');
+            if (!end_message) end_message = '🎉 [y] 新年快樂！';
+
+            var countDownDate = new Date(`Jan 1, ${years} 00:00:00`).getTime();
+            var x = setInterval(timer, 1000);
+
+            function timer() {
+                let now = new Date().getTime();
+                let distance = countDownDate - now;
+                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let t_days = 0, t_hours = 0, t_minutes = 0, t_seconds = 0;
+                t_days = days, t_hours = hours, t_minutes = minutes, t_seconds = seconds;
+                if (days < 10) {
+                    t_days = "0" + days;
+                }
+                if (hours < 10) {
+                    t_hours = "0" + hours;
+                }
+                if (minutes < 10) {
+                    t_minutes = "0" + minutes;
+                }
+                if (seconds < 10) {
+                    t_seconds = "0" + seconds;
+                }
+
+                let text = `距離 ${years} 還有`;
+                if (days > 0) {
+                    text += ` ${t_days} 天`;
+                }
+                text += ` ${t_hours} 時 ${t_minutes} 分`;
+                if (seconds > 0) {
+                    text += ` ${t_seconds} 秒`;
+                }
+                document.getElementById(`timer`).innerText = text;
+                if (distance < 0) {
+                    clearInterval(x);
+                    let show_message = end_message.replace('[y]', years);
+                    document.getElementById(`timer`).innerText = show_message;
+                }
+            }
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

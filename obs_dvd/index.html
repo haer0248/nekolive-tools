@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="stylesheet" href="https://nekolive.net/assets/bootstrap/dist/css/bootstrap.min.css" />
+
+        <script src="https://widgets.nekolive.net/assets/jquery-3.7.1.min.js"></script>
+        <script src="https://widgets.nekolive.net/assets/outline.js"></script>
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+            
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            html,
+            body {
+                font-family: 'Noto Sans TC';
+            }
+
+            .box {
+                display: block;
+                left: 0;
+                top: 0;
+                position: absolute;
+            }
+
+            .context {
+                background-color: rgba(0, 0, 0, var(--opacity, 0.9));
+                font-size: var(--font-size, 5rem);
+                color: var(--font-color, #ffffff);
+                text-shadow:
+                    var(--outline-color, #000000) 2px 0px 0px,
+                    var(--outline-color, #000000) 1.75517px 0.958851px 0px,
+                    var(--outline-color, #000000) 1.0806px 1.68294px 0px,
+                    var(--outline-color, #000000) 0.141474px 1.99499px 0px,
+                    var(--outline-color, #000000) -0.832294px 1.81859px 0px,
+                    var(--outline-color, #000000) -1.60229px 1.19694px 0px,
+                    var(--outline-color, #000000) -1.97999px 0.28224px 0px,
+                    var(--outline-color, #000000) -1.87291px -0.701566px 0px,
+                    var(--outline-color, #000000) -1.30729px -1.51361px 0px,
+                    var(--outline-color, #000000) -0.421592px -1.95506px 0px,
+                    var(--outline-color, #000000) 0.567324px -1.91785px 0px,
+                    var(--outline-color, #000000) 1.41734px -1.41108px 0px,
+                    var(--outline-color, #000000) 1.92034px -0.558831px 0px;
+            }
+        </style>
+
+        <div class="box">
+            <span class="context" id="text">吃晚餐</span>
+        </div>
+
+        <div class="container" id="obsHide" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        【幫助模式】幫助模式已自動啟用，在 OBS 使用此幫助將會自動隱藏，無需輸入任何設定。
+                    </div>
+
+                    <form action="#!" method="get" id="form">
+
+                        <div class="mb-3">
+                            <label for="text" class="form-label">顯示文字</label>
+                            <input type="text" class="form-control" id="text" name="text" placeholder="吃晚餐">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="color" class="form-label">文字顏色</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <input type="color" class="form-control form-control-color" id="colorPicker" data-bind="fontColor">
+                                </span>
+                                <input type="text" class="form-control" id="fontColor" name="fontColor">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fontSize" class="form-label">文字大小</label>
+                            <input type="text" class="form-control" id="fontSize" name="fontSize" placeholder="5rem">
+                            <p class="form-text">預設 5rem，請輸入單位 <code>px</code>, <code>em</code>, <code>rem</code> 或使用 <code>%</code></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="color" class="form-label">邊框顏色</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">
+                                    <input type="color" class="form-control form-control-color" id="colorPicker" data-bind="outlineColor">
+                                </span>
+                                <input type="text" class="form-control" id="outlineColor" name="outlineColor">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="outlineSize" class="form-label">邊框大小</label>
+                            <input type="text" class="form-control" id="outlineSize" name="outlineSize" placeholder="3">
+                            <p class="form-text">預設 3</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="speed" class="form-label">速度</label>
+                            <div class="d-flex justify-content-between">
+                                <div>0</div>
+                                <div>100</div>
+                                <div>200</div>
+                                <div>300</div>
+                                <div>400</div>
+                                <div>500</div>
+                                <div>600</div>
+                                <div>700</div>
+                                <div>800</div>
+                                <div>900</div>
+                                <div>1000</div>
+                            </div>
+                            <input id="speed" name="speed" type="range" class="form-range" min="0" max="1000" value="300">
+                            <p class="form-text">預設 300</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="opacity" class="form-label">背景不透明度</label>
+                            <div class="d-flex justify-content-between">
+                                <div>0%</div>
+                                <div>10%</div>
+                                <div>20%</div>
+                                <div>30%</div>
+                                <div>40%</div>
+                                <div>50%</div>
+                                <div>60%</div>
+                                <div>70%</div>
+                                <div>80%</div>
+                                <div>90%</div>
+                                <div>100%</div>
+                            </div>
+                            <input id="opacity" name="opacity" type="range" class="form-range" min="0" max="100" value="90">
+                            <p class="form-text">預設 90%</p>
+                        </div>
+                    </form>
+
+                    <button type="button" data-submit class="btn btn-success">產生預覽</button>
+                    <p class="form-text">點選產生後，點選下方預覽就會自動複製，貼上到 OBS 後就可以使用了。</p>
+
+                    <textarea class="form-control" readonly name="preview" id="preview" cols="30" rows="3"></textarea>
+
+                    <script>
+                        const urlParams = new URLSearchParams(window.location.search);
+
+                        try {
+                            const root = document.documentElement;
+
+                            const textInput = document.getElementById('text');
+                            const fontColorInput = document.getElementById('fontColor');
+                            const fontSizeInput = document.getElementById('fontSize');
+                            const outlineColorInput = document.getElementById('outlineColor');
+                            const outlineSizeInput = document.getElementById('outlineSize');
+                            const speedInput = document.getElementById('speed');
+                            const opacityInput = document.getElementById('opacity');
+
+                            const text = urlParams.get('text');
+                            const fontColor = urlParams.get('fontColor');
+                            const fontSize = urlParams.get('fontSize');
+                            const outlineColor = urlParams.get('outlineColor');
+                            const outlineSize = urlParams.get('outlineSize');
+                            const speed = urlParams.get('speed');
+                            const opacity = urlParams.get('opacity');
+
+                            if (text) {
+                                document.getElementById('text').innerText = text;
+                                if (textInput) textInput.value = text;
+                            }
+                            if (fontColor) {
+                                root.style.setProperty('--font-color', fontColor);
+                                if (fontColorInput) fontColorInput.value = fontColor;
+                            }
+                            if (fontSize) {
+                                root.style.setProperty('--font-size', fontSize);
+                                if (fontSizeInput) fontSizeInput.value = fontSize;
+                            }
+                            if (outlineColor) {
+                                root.style.setProperty('--outline-color', outlineColor);
+                                if (outlineColorInput) outlineColorInput.value = outlineColor;
+                            }
+                            if (outlineSize) {
+                                if (outlineSizeInput) outlineSizeInput.value = outlineSize;
+                            }
+                            if (speed) {
+                                if (speedInput) speedInput.value = speed;
+                            }
+                            if (opacity) {
+                                root.style.setProperty('--opacity', (opacity / 100));
+                                if (opacityInput) opacityInput.value = opacity;
+                            }
+
+                            const context = document.querySelector('.context');
+                            Outline.update(context, (outlineSize ?? 3), outlineColor);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    </script>
+
+                    <script>
+                        $(document).on('click', 'button[data-submit]', function () {
+                            generateUrl();
+                        })
+
+                        $(document).on('click', '#preview', function () {
+                            this.select();
+                            document.execCommand('copy');
+                            $(this).addClass('is-valid')
+
+                            setTimeout(() => {
+                                $('#preview').attr('class', 'form-control')
+                            }, 3000)
+                        });
+
+                        function generateUrl() {
+                            const baseUrl = `https://${location.hostname}/obs_dvd?`;
+                            const formResult = serializeForm(document.getElementById('form'));
+                            const resultUrl = `${baseUrl}${formResult}&obs=1`;
+                            $("#preview").val(resultUrl);
+                        }
+
+                        function serializeForm(form) {
+                            const formData = new FormData(form);
+                            const params = new URLSearchParams();
+
+                            for (const [key, value] of formData.entries()) {
+                                params.append(key, value);
+                            }
+
+                            return params.toString();
+                        }
+                    </script>
+
+                    <script>
+                        $(document).on('change', "[id=colorPicker]", function () {
+                            let bind = $(this).attr('data-bind');
+                            $(`input[id=${bind}]`).val($(this).val());
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function ($, window, undefined) {
+                $.fn.marqueeify = function (options) {
+                    var settings = $.extend({
+                        horizontal: true,
+                        vertical: true,
+                        speed: 100, // In pixels per second
+                        container: $(this).parent(),
+                        bumpEdge: function () { }
+                    }, options);
+
+                    return this.each(function () {
+                        var containerWidth, containerHeight, elWidth, elHeight, move, getSizes,
+                            $el = $(this);
+
+                        getSizes = function () {
+                            containerWidth = settings.container.outerWidth();
+                            containerHeight = settings.container.outerHeight();
+                            elWidth = $el.outerWidth();
+                            elHeight = $el.outerHeight();
+                        };
+
+                        move = {
+                            right: function () {
+                                $el.animate({
+                                    left: (containerWidth - elWidth)
+                                }, {
+                                    duration: ((containerWidth / settings.speed) * 1000),
+                                    queue: false,
+                                    easing: "linear",
+                                    complete: function () {
+                                        settings.bumpEdge();
+                                        move.left();
+                                    }
+                                });
+                            },
+                            left: function () {
+                                $el.animate({
+                                    left: 0
+                                }, {
+                                    duration: ((containerWidth / settings.speed) * 1000),
+                                    queue: false,
+                                    easing: "linear",
+                                    complete: function () {
+                                        settings.bumpEdge();
+                                        move.right();
+                                    }
+                                });
+                            },
+                            down: function () {
+                                $el.animate({
+                                    top: (containerHeight - elHeight)
+                                }, {
+                                    duration: ((containerHeight / settings.speed) * 1000),
+                                    queue: false,
+                                    easing: "linear",
+                                    complete: function () {
+                                        settings.bumpEdge();
+                                        move.up();
+                                    }
+                                });
+                            },
+                            up: function () {
+                                $el.animate({
+                                    top: 0
+                                }, {
+                                    duration: ((containerHeight / settings.speed) * 1000),
+                                    queue: false,
+                                    easing: "linear",
+                                    complete: function () {
+                                        settings.bumpEdge();
+                                        move.down();
+                                    }
+                                });
+                            }
+                        };
+
+                        getSizes();
+
+                        if (settings.horizontal) {
+                            move.right();
+                        }
+                        if (settings.vertical) {
+                            move.down();
+                        }
+
+                        // Make that shit responsive!
+                        $(window).resize(function () {
+                            getSizes();
+                        });
+                    });
+                };
+            })(jQuery, window);
+
+            $(document).ready(function () {
+                if (detectOBS() || urlParams.get('obs') == 1) {
+                    const speed = urlParams.get('speed') ?? 300;
+                    $('.box').marqueeify({
+                        speed: speed
+                    });
+                } else {
+                    document.getElementById('obsHide').style.display = 'block';
+                }
+            });
+        </script>
+
+        <script>
+            function detectOBS() {
+                const userAgent = navigator.userAgent.toLowerCase();
+                const hasOBSInUA = userAgent.includes('obs');
+                const hasOBSWindow = typeof window.obsstudio !== 'undefined';
+
+                return hasOBSInUA || hasOBSWindow;
+            }
+
+            if (detectOBS() || urlParams.get('obs') == "1") {
+                const styleElement = document.createElement('style');
+                styleElement.type = 'text/css';
+                styleElement.textContent = `
+                html,
+                body {
+                    height: 100%;
+                    margin: 0;
+                    min-height: 100%;
+                    overflow: hidden;
+                    position: relative;
+                }`;
+                document.head.appendChild(styleElement);
+            }
+
+            if (!detectOBS() && urlParams.get('obs') == "1") {
+                const styleElement = document.createElement('style');
+                styleElement.type = 'text/css';
+                styleElement.textContent = `
+                html,
+                body {
+                    background-color: #6c6c6c;
+                }`;
+                document.head.appendChild(styleElement);
+            }
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>

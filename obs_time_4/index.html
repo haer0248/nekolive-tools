@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="auhtor" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans+TC:wght@100..900&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            :root {
+                --color: #ffffff;
+                --neon-color: #6e50c0;
+            }
+
+            body {
+                font-family: 'Fira Code', 'Noto Sans TC';
+                color: #ffffff;
+                display: flex;
+                flex-direction: column;
+            }
+
+            #box {
+                bottom: 0;
+                position: absolute;
+                margin: 1em;
+                color: var(--color);
+                text-shadow: 0 0 4px var(--neon-color),
+                    0 0 8px var(--neon-color),
+                    0 0 12px var(--neon-color),
+                    0 0 16px var(--neon-color),
+                    0 0 20px var(--neon-color),
+                    0 0 24px var(--neon-color);
+            }
+
+            #clock .time {
+                font-size: 5em;
+            }
+
+            #clock .apm {
+                margin-left: 15px;
+                font-size: 3em;
+            }
+
+            #date .date {
+                font-size: 1.5em;
+            }
+        </style>
+
+        <style>
+            .left-top {
+                top: 0;
+                bottom: unset;
+            }
+
+            .left-bottom {
+                top: unset;
+                bottom: 0;
+            }
+
+            .right-top {
+                top: 0;
+                bottom: unset;
+                right: 0;
+                text-align: right;
+            }
+
+            .right-bottom {
+                top: unset;
+                right: 0;
+                bottom: 0;
+                text-align: right;
+            }
+        </style>
+
+        <div id="box" class="box">
+            <div id="clock"></div>
+            <div id="date"></div>
+        </div>
+
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const displayAPM = (urlParams.get('apm') === "false" ? false : true);
+            const position = (urlParams.get('position') || 'left-bottom');
+
+            if (position) {
+                document.getElementById('box').classList.add(position);
+            }
+
+            const displayLang = urlParams.get('lang') || 'en';
+            let lang = displayLang;
+            if (['en', 'zh-TW', 'ja-JP'].includes(displayLang)) {
+                lang = displayLang
+            } else {
+                lang = 'en';
+            }
+
+            const displayLong = (urlParams.get('long') === "false" ? false : true);
+            let long = 'long';
+            if (!displayLong) {
+                long = 'short';
+            }
+
+            const weeks = {
+                'long': {
+                    'en': ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                    'zh-TW': ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                    'ja-JP': ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
+                },
+                'short': {
+                    'en': ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'],
+                    'zh-TW': ['日', '一', '二', '三', '四', '五', '六'],
+                    'ja-JP': ['日', '月', '火', '水', '木', '金', '土'],
+                },
+            };
+
+            // Clock
+            const clock = document.getElementById('clock');
+            const date = document.getElementById('date');
+
+            (function () {
+                var pad = function (x) {
+                    return x < 10 ? '0' + x : x;
+                };
+
+                var ticktock = function () {
+                    let time = new Date();
+
+                    let Y = time.getFullYear();
+                    let M = time.getMonth() + 1;
+                    let D = time.getDate();
+                    let h = time.getHours();
+                    let m = time.getMinutes();
+                    let s = time.getSeconds();
+
+                    let day = time.getDay();
+                    let apm = '';
+
+                    if (displayAPM) {
+                        if (h === 0) h = 12;
+                        else if (h > 12) h -= 12;
+                        apm = '<span class="apm">' + (time.getHours() < 12 ? 'AM' : 'PM') + '</span>';
+                    }
+                    clock.innerHTML = '<span class="time">' + [pad(h), pad(m)].join(':') + '</span>' + apm;
+                    date.innerHTML = '<span class="date">' + [Y, pad(M), pad(D)].join('/') + ' ⁞ ' + weeks[long][lang][day] + '</span>';
+                };
+                ticktock();
+                setInterval(ticktock, 1000);
+            }());
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>
