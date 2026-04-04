@@ -8,4 +8,5 @@ https://tools.nekolive.net/
 技術支援：[Nekolive.net 貓咪娛樂](https://nekolive.net/)  
 ~~別看我的 commit，那都是亂打的~~
 
-如果喜歡這坨小工具，可以按一顆星星或是[贊助我](https://nekolive.net/haer0248) :D
+如果喜歡這坨小工具，可以按一顆星星或是[贊助我](https://nekolive.net/haer0248) :D  
+有空的時候會開台，[看看圖奇邊緣人](https://www.twitch.tv/haer0248) 😭
