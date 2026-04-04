@@ -25,15 +25,15 @@
                 overflow: hidden;
             }
 
-            body {
-                font-family: "Fira Code", monospace;
-            }
-
             html,
             body {
                 font-size: 150%;
                 width: 100%;
                 height: 100%;
+            }
+
+            body {
+                font-family: "Fira Code", monospace;
             }
 
             [data-time] {
@@ -46,44 +46,12 @@
                 text-shadow: rgb(0, 0, 0) 3px 0px, rgb(0, 0, 0) 2.83487px 0.981584px, rgb(0, 0, 0) 2.35766px 1.85511px, rgb(0, 0, 0) 1.62091px 2.52441px, rgb(0, 0, 0) 0.705713px 2.91581px, rgb(0, 0, 0) -0.287171px 2.98622px, rgb(0, 0, 0) -1.24844px 2.72789px, rgb(0, 0, 0) -2.07227px 2.16926px, rgb(0, 0, 0) -2.66798px 1.37182px, rgb(0, 0, 0) -2.96998px 0.42336px, rgb(0, 0, 0) -2.94502px -0.571704px, rgb(0, 0, 0) -2.59586px -1.50383px, rgb(0, 0, 0) -1.96093px -2.27041px, rgb(0, 0, 0) -1.11013px -2.78704px, rgb(0, 0, 0) -0.137119px -2.99686px, rgb(0, 0, 0) 0.850987px -2.87677px, rgb(0, 0, 0) 1.74541px -2.43999px, rgb(0, 0, 0) 2.44769px -1.73459px, rgb(0, 0, 0) 2.88051px -0.838247px;
                 align-items: flex-end;
             }
-
-            pre {
-                color: #ffffff;
-                line-height: 1.5;
-            }
-
-            code {
-                border: solid;
-                border-radius: 0.25em;
-                padding-left: 2px;
-                padding-right: 2px;
-                color: #d63384;
-            }
-
-            .obs-hide {
-                display: none !important;
-            }
         </style>
 
-        <pre id="help-text" class="obs-hide">[幫助]【OBS 直播畫面用】使用方式請參考 <a href="https://github.com/haer0248/tools-page-help/blob/main/obs_time_2.md" target="_blank" rel="noopener noreferrer">Github</a></pre>
         <div data-time></div>
 
         <script>
-            function getUrlParams() {
-                const params = new URLSearchParams(window.location.search);
-                return {
-                    opacity: params.get('opacity')
-                };
-            }
-
             function initializePage() {
-                const params = getUrlParams();
-
-                if (params.opacity !== 'none') {
-                    const opacity = params.opacity ? params.opacity / 10 : 0.4;
-                    document.body.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
-                }
-
                 const userAgent = navigator.userAgent;
                 if (!userAgent.includes('OBS')) {
                     document.getElementById('help-text').classList.remove('obs-hide');

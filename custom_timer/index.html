@@ -79,17 +79,17 @@
             const time = getUrlParameter('t') || '00:00:00';
             const msg = stripTags(getUrlParameter('msg')) || `距離 ${year} 還有`;
             const end = stripTags(getUrlParameter('end')) || '新年快樂！';
-            const stopAlert = getUrlParameter('stopalert');
+            const isOBS = navigator.userAgent.includes('OBS') || getUrlParameter('obs') === '1';
+
+            // Hide content if OBS
+            if (!isOBS) {
+                document.getElementById('info').style.display = 'block';
+            }
 
             // Update year displays in info section
             document.getElementById('year-display').textContent = year;
             document.getElementById('year-display2').textContent = year;
             document.getElementById('year-display3').textContent = year;
-
-            // Hide info section if stopalert parameter is set
-            if (!stopAlert) {
-                document.getElementById('info').style.display = 'block';
-            }
 
             // Create countdown date
             const dateString = `${month} ${day}, ${year} ${time}`;

@@ -19,12 +19,17 @@
     <body data-bs-theme="dark">
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
-            
+
             * {
                 margin: 0;
                 padding: 0;
-                box-sizing: border-box;
-                overflow: hidden;
+                box-sizing: border-box;                
+            }
+
+            body {
+                font-size: 50px;
+                font-family: 'Noto Sans TC', sans-serif;
+                color: #FFFFFF;
             }
 
             .hidden {
@@ -38,21 +43,15 @@
                 color: #FFFFFF;
             }
 
-            body {
-                font-size: 50px;
+            #content {
                 font-family: 'Noto Sans TC', sans-serif;
-                color: #FFFFFF;
+                font-size: 16px;
             }
         </style>
 
         <span id="text"></span>
         <div class="console-underscore" id="console">_</div>
-        <style>
-            #content {
-                font-family: 'Noto Sans TC';
-                font-size: 16px;
-            }
-        </style>
+        
         <div class="container mb-3" id="content">
             <div class="card">
                 <div class="card-body">
@@ -61,8 +60,7 @@
                     <form action="obs" method="get">
                         <div class="mb-3">
                             <label for="text" class="form-label">文字</label>
-                            <button class="btn btn-outline-success btn-sm" type="button" id="add-text">新增</button>
-                            <p class="form-text">瀏覽器的網址限制長度為 <code>2,048</code>，如果您需要超過此字元數量，請 <a href="https://gist.github.com/haer0248/71e795ff9d146ec493818f86255672ad" target="_blank" rel="noopener noreferrer">下載檔案</a> 自行變更。</p>
+                            <p class="form-text">瀏覽器的網址限制長度為 <code>2,048</code>，如果您需要超過此字元數量，請 <a href="https://github.com/haer0248/nekolive-tools/blob/main/obs/index.html" target="_blank" rel="noopener noreferrer">下載檔案</a> 自行變更。</p>
                             <div id="text-list">
                                 <div class="input-group mb-1" data-id="0">
                                     <input type="text" id="text-pre[]" name="text-pre[]" class="form-control" placeholder="預設文字" value="預設文字。">
@@ -77,6 +75,7 @@
                                     <button class="btn btn-outline-danger" type="button" class="del-text" data-id="2">刪除</button>
                                 </div>
                             </div>
+                                <button class="btn btn-outline-success btn-sm" type="button" id="add-text">新增</button>
                         </div>
 
                         <script>
@@ -175,6 +174,7 @@
                 </div>
             </div>
         </div>
+        
         <script>
             // Get URL parameters
             const urlParams = new URLSearchParams(window.location.search);
