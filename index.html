@@ -50,44 +50,58 @@
                 </div>
             </nav>
 
-            <div id="content"></div>
+            <div class="page">
+                <div class="callout">
+                    分類為<strong>「OBS 用小工具」</strong>可以直接在 OBS 上開啟一個瀏覽器來源並輸入進去。<br>後方有 🌐 表示在 Github 上有客製化教學可用，請前往 <a href="https://github.com/haer0248/nekolive-tools" target="_blank" rel="noopener noreferrer">haer0248/nekolive-tools</a> 點進對應的資料夾閱讀。
+                </div>
+    
+                <div id="content"></div>
+            </div>
+
+
             <script>
                 const years = new Date().getFullYear() + 1;
                 const sites = [{
+                    name: "創作者小工具",
+                    style: "purple"
+                }, {
+                    name: "Twitch 訂閱者抽獎",
+                    url: "/twitch-lottery"
+                }, {
                     name: "OBS 用小工具",
                     style: "purple"
                 }, {
                     name: "時鐘",
                     url: "/obs_time"
                 }, {
-                    name: "時鐘",
+                    name: "時鐘 🌐",
                     url: "/obs_time_2"
                 }, {
                     name: "時鐘",
                     url: "/obs_time_3"
                 }, {
-                    name: "時鐘",
+                    name: "時鐘 🌐",
                     url: "/obs_time_4"
                 }, {
                     name: "時鐘",
                     url: "/obs_time_5"
                 }, {
-                    name: "跑馬燈（輸入中樣式）",
+                    name: "跑馬燈（輸入中樣式） 🌐",
                     url: "/obs"
                 }, {
-                    name: "跑馬燈（滿版）",
+                    name: "跑馬燈（滿版） 🌐",
                     url: "/obs_marquee"
                 }, {
-                    name: "DVD",
+                    name: "暫離卡動畫 🌐",
+                    url: "/obs_afk"
+                }, {
+                    name: "DVD 🌐",
                     url: "/obs_dvd"
                 }, {
-                    name: "Twitch 訂閱者抽獎",
-                    url: "/twitch-lottery"
-                }, {
-                    name: "自訂倒數計時",
+                    name: "自訂倒數計時 🌐",
                     url: "/custom_timer"
                 }, {
-                    name: `${years} 倒數計時`,
+                    name: `${years} 倒數計時 🌐`,
                     url: "/years"
                 }, {
                     name: "其他網址",
@@ -110,8 +124,6 @@
 
                 function createContent() {
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'page';
-
                     const list = document.createElement('div');
 
                     let currentSection = null;
