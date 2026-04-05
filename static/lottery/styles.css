@@ -740,6 +740,10 @@ tr.excluded td {
     animation: flicker 0.1s steps(1) infinite;
 }
 
+.draw-rolling .roll-name.no-anim {
+    animation: none;
+}
+
 @keyframes flicker {
     0% {
         opacity: 1

@@ -924,37 +924,70 @@ function refreshDraw() {
                 </div>`;
     }).join('');
 
-    updateDrawDurationPresetUI();
-    const customInput = document.getElementById('draw-duration-custom');
-    if (customInput) customInput.value = getDrawDuration();
+    updateDrawSettingsSummary();
 }
 
 const LS_DRAW_DURATION = 'lottery_draw_duration';
+const LS_DRAW_ANIMATION = 'lottery_draw_animation';
 
 function getDrawDuration() {
     return parseInt(localStorage.getItem(LS_DRAW_DURATION)) || 3;
 }
 
+function getDrawAnimation() {
+    const v = localStorage.getItem(LS_DRAW_ANIMATION);
+    return v === null ? true : v === 'on';
+}
+
 function setDrawDuration(sec) {
     sec = Math.max(1, Math.min(60, parseInt(sec) || 3));
     localStorage.setItem(LS_DRAW_DURATION, sec);
-    const input = document.getElementById('draw-duration-custom');
+    const input = document.getElementById('draw-settings-duration-input');
     if (input) input.value = sec;
-    updateDrawDurationPresetUI();
+    updateDrawSettingsPresetUI();
+    updateDrawSettingsSummary();
 }
 
 function onDrawDurationCustom(val) {
     const sec = Math.max(1, Math.min(60, parseInt(val) || 3));
     localStorage.setItem(LS_DRAW_DURATION, sec);
-    updateDrawDurationPresetUI();
+    updateDrawSettingsPresetUI();
+    updateDrawSettingsSummary();
 }
 
-function updateDrawDurationPresetUI() {
+function updateDrawSettingsPresetUI() {
     const cur = getDrawDuration();
-    document.querySelectorAll('#draw-duration-presets button').forEach(btn => {
+    document.querySelectorAll('#draw-settings-presets button').forEach(btn => {
         const sec = parseInt(btn.dataset.sec);
         btn.className = sec === cur ? 'btn btn-sm btn-accent' : 'btn btn-sm';
     });
+}
+
+function toggleDrawAnimation(val) {
+    localStorage.setItem(LS_DRAW_ANIMATION, val ? 'on' : 'off');
+    document.getElementById('anim-btn-on').className = val ? 'btn btn-sm btn-accent' : 'btn btn-sm';
+    document.getElementById('anim-btn-off').className = val ? 'btn btn-sm' : 'btn btn-sm btn-accent';
+    updateDrawSettingsSummary();
+}
+
+function updateDrawSettingsSummary() {
+    const el = document.getElementById('draw-settings-summary');
+    if (!el) return;
+    el.textContent = `${getDrawDuration()} 秒 · 動畫${getDrawAnimation() ? '開啟' : '關閉'}`;
+}
+
+function openDrawSettingsModal() {
+    const input = document.getElementById('draw-settings-duration-input');
+    if (input) input.value = getDrawDuration();
+    updateDrawSettingsPresetUI();
+    const anim = getDrawAnimation();
+    document.getElementById('anim-btn-on').className = anim ? 'btn btn-sm btn-accent' : 'btn btn-sm';
+    document.getElementById('anim-btn-off').className = anim ? 'btn btn-sm' : 'btn btn-sm btn-accent';
+    document.getElementById('draw-settings-modal').classList.add('open');
+}
+
+function closeDrawSettingsModal() {
+    document.getElementById('draw-settings-modal').classList.remove('open');
 }
 
 // 建池
@@ -1032,8 +1065,8 @@ function finishDrawAnimation(pool, drawCount) {
     drawBtn.disabled = false;
     drawBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg> 開始抽獎`;
     if (stopBtn) stopBtn.style.display = 'none';
-    document.getElementById('draw-duration-wrap').style.pointerEvents = '';
-    document.getElementById('draw-duration-wrap').style.opacity = '';
+    const durationWrap = document.getElementById('draw-duration-wrap');
+    if (durationWrap) { durationWrap.style.pointerEvents = ''; durationWrap.style.opacity = ''; }
 
     const winners = [];
     const need = drawCount;
@@ -1094,7 +1127,8 @@ function startDraw() {
     const drawBtn = document.getElementById('draw-btn');
     const stopBtn = document.getElementById('stop-draw-btn');
     drawBtn.disabled = true;
-    document.getElementById('draw-again-btn').style.display = 'none';
+    drawBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg> <span id="draw-btn-countdown"></span>`;
+
     if (stopBtn) stopBtn.style.display = 'inline-flex';
 
     const durationWrap = document.getElementById('draw-duration-wrap');
@@ -1115,6 +1149,10 @@ function startDraw() {
     let tick = 0;
     const total = Math.round(getDrawDuration() * 1000 / 80);
 
+    if (!getDrawAnimation()) {
+        stage.innerHTML = `<div class="draw-rolling"><div class="roll-name no-anim" style="font-size:18px;letter-spacing:0.05em;color:var(--text3)">抽獎進行中 ...</div></div>`;
+    }
+
     drawInterval = setInterval(() => {
         if (rollIdx >= uniqueSubs.length) {
             rollIdx = 0;
@@ -1124,10 +1162,13 @@ function startDraw() {
             }
         }
         const r = uniqueSubs[rollIdx++];
-        stage.innerHTML = `<div class="draw-rolling"><div class="roll-name">${r.username}</div></div>`;
+        if (getDrawAnimation()) {
+            stage.innerHTML = `<div class="draw-rolling"><div class="roll-name">${r.username}</div></div>`;
+        }
         tick++;
         const remainSec = Math.max(1, Math.ceil((total - tick) * 80 / 1000));
-        drawBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg> ${remainSec}s`;
+        const countdown = document.getElementById('draw-btn-countdown');
+        if (countdown) countdown.textContent = remainSec + 's';
         if (tick >= total) finishDrawAnimation(pool, drawCount);
     }, 80);
 }
@@ -1163,7 +1204,7 @@ function showWinner(winners, poolSize) {
                 </div>`;
     }
     document.getElementById('draw-btn').disabled = false;
-    document.getElementById('draw-again-btn').style.display = 'inline-flex';
+    
     winners.forEach(w => {
         const tickets = getTickets(w);
         const pct = poolSize > 0 ? (tickets / poolSize * 100).toFixed(2) : '0.00';
@@ -1226,7 +1267,6 @@ function clearHistory() {
     toast('紀錄已清除');
     const stage = document.getElementById('draw-stage');
     stage.innerHTML = `<div class="draw-idle">按下「開始抽獎」</div>`;
-    document.getElementById('draw-again-btn').style.display = 'none';
 }
 
 // ── Sessions ──
@@ -1751,6 +1791,7 @@ function clearAllData() {
 }
 
 function startDrawEffect() {
+    if (!getDrawAnimation()) return;
     const stage = document.getElementById("draw-stage");
     charge(stage);
     setTimeout(() => explode(stage), 700);
