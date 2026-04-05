@@ -1,4 +1,3 @@
-
 // ── State ──
 let state = {
     sessionId: null,
@@ -34,6 +33,16 @@ const PAGE_TITLES = {
     history: '抽獎紀錄',
     transfer: '匯入 / 匯出'
 };
+
+// ── 分頁狀態 ──
+let tablePage = 1;
+const TABLE_PAGE_SIZE = 50;
+let tableFilter = '';
+
+// ── Override 分頁狀態 ──
+let overridePage = 1;
+const OVERRIDE_PAGE_SIZE = 50;
+let overrideFilter = '';
 
 // ── localStorage ──
 const LS_SESSIONS = 'lottery_sessions';
@@ -139,6 +148,8 @@ function applyState() {
     });
     applyRecurringOnlyUI();
     applyExcludeWinnersUI();
+    tablePage = 1;
+    tableFilter = '';
     renderTable();
     refreshDraw();
     renderHistory();
@@ -186,7 +197,13 @@ function showPage(p) {
     document.getElementById('mob-page-title').textContent = PAGE_TITLES[p] || p;
     closeSidebar();
     if (p === 'draw') refreshDraw();
-    if (p === 'settings') renderOverrides();
+    if (p === 'settings') {
+        overridePage = 1;
+        overrideFilter = '';
+        const oi = document.getElementById('override-search-input');
+        if (oi) oi.value = '';
+        renderOverrides();
+    }
     if (p === 'history') renderHistory();
     if (p === 'sessions') renderSessions();
     if (p === 'prizes') renderPrizes();
@@ -204,9 +221,11 @@ function saveMults() {
     state.mults.prime = parseFloat(document.getElementById('mult-prime').value) || 1;
     state.mults.founder = parseFloat(document.getElementById('mult-founder').value) || 1;
     saveSession();
-    renderTable();
+    renderTableStats();
     refreshDraw();
-    renderOverrides();
+    if (document.getElementById('page-settings').classList.contains('active')) {
+        renderOverrides();
+    }
 }
 
 // ── Import Tabs ──
@@ -274,9 +293,11 @@ function toggleRecurringOnly() {
     state.recurringOnly = !state.recurringOnly;
     applyRecurringOnlyUI();
     saveSession();
-    renderTable();
+    renderTableStats();
     refreshDraw();
-    renderOverrides();
+    if (document.getElementById('page-settings').classList.contains('active')) {
+        renderOverrides();
+    }
 }
 
 function applyRecurringOnlyUI() {
@@ -475,7 +496,9 @@ function mergeEntries(entries) {
 
 function finishImport(count) {
     saveSession();
-    setMsg(`匯入完成，共 ${state.subscribers.length} 筆`);
+    setMsg(`匯入完成，共 ${(state.subscribers.length).toLocaleString()} 筆`);
+    tablePage = 1;
+    tableFilter = '';
     renderTable();
     refreshDraw();
     toast(`成功匯入 ${count} 筆訂閱者`);
@@ -485,6 +508,8 @@ function clearData() {
     if (!state.subscribers.length) return;
     if (!confirm('確定清除所有訂閱者資料？')) return;
     state.subscribers = [];
+    tablePage = 1;
+    tableFilter = '';
     saveSession();
     renderTable();
     refreshDraw();
@@ -506,9 +531,7 @@ function addManualSingle() {
 
     const tierRaw = document.getElementById('manual-tier').value;
     const subType = document.getElementById('manual-subtype').value;
-    // const founder = document.getElementById('manual-founder').value;
     const founder = false;
-    // const tenure = parseInt(document.getElementById('manual-tenure').value) || 1;
     const tenure = 1;
 
     const entry = {
@@ -642,35 +665,132 @@ function nextConflict() {
     } else showConflictModal();
 }
 
-// ── Render table ──
+// ── Render table stats (輕量，不重建 tbody) ──
+function renderTableStats() {
+    const s = state.subscribers;
+    if (!s.length) return;
+    const pool = s.filter(x => !x.excluded);
+    const totalTickets = pool.reduce((a, x) => a + getTickets(x), 0);
+    const statsEl = document.getElementById('stats-grid');
+    if (statsEl) {
+        statsEl.innerHTML = [
+            [s.length, '訂閱人數'],
+            [s.filter(x => x.tier === '層級一').length, '層級一'],
+            [s.filter(x => x.tier === '層級二').length, '層級二'],
+            [s.filter(x => x.tier === '層級三').length, '層級三'],
+            [s.filter(x => isFounder(x)).length, '創建者'],
+            [totalTickets, '總票數'],
+        ].map(([n, l]) => `<div class="stat-card"><div class="stat-n">${(n).toLocaleString()}</div><div class="stat-l">${l}</div></div>`).join('');
+    }
+}
+
+// ── Render table（分頁版）──
 function renderTable() {
     const sec = document.getElementById('table-section');
     const has = state.subscribers.length > 0;
     sec.style.display = has ? 'block' : 'none';
     if (!has) return;
-    const s = state.subscribers;
-    const pool = s.filter(x => !x.excluded);
-    const totalTickets = pool.reduce((a, x) => a + getTickets(x), 0);
-    document.getElementById('stats-grid').innerHTML = [
-        [s.length, '訂閱人數'],
-        [s.filter(x => x.tier === '層級一').length, '層級一'],
-        [s.filter(x => x.tier === '層級二').length, '層級二'],
-        [s.filter(x => x.tier === '層級三').length, '層級三'],
-        [s.filter(x => isFounder(x)).length, '創建者'],
-        [totalTickets, '總票數'],
-    ].map(([n, l]) => `<div class="stat-card"><div class="stat-n">${n}</div><div class="stat-l">${l}</div></div>`).join('');
-    document.getElementById('sub-body').innerHTML = s.map((x, i) => `
-                <tr class="${x.excluded ? 'excluded' : ''}" id="row-${i}">
-                    <td style="color:var(--text);font-weight:600;">${x.username}</td>
-                    <td style="color:var(--text3)">${x.date}</td>
-                    <td>${tierBadge(x.tier)}</td>
-                    <td>${x.tenure}</td><td>${x.streak}</td>
-                    <td>${typeBadge(x.subType)}</td>
-                    <td>${isFounder(x) ? '<span class="badge b-founder">是</span>' : '-'}</td>
-                    <td><input type="number" value="${x.customMult !== undefined ? x.customMult : getTierBase(x.tier)}" min="0" max="9999" style="width:60px;text-align:center;padding:4px 6px" onchange="setCustomMult(${i},this.value)"></td>
-                    <td><button class="btn btn-sm ${x.excluded ? 'btn-accent' : 'btn-danger'}" onclick="toggleExclude(${i})">${x.excluded ? '恢復' : '排除'}</button></td>
-                </tr>
-            `).join('');
+
+    renderTableStats();
+
+    const keyword = tableFilter.toLowerCase();
+    const filtered = keyword
+        ? state.subscribers.filter((x, i) => {
+            x._origIdx = i;
+            return x.username.toLowerCase().includes(keyword);
+        })
+        : state.subscribers.map((x, i) => { x._origIdx = i; return x; });
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / TABLE_PAGE_SIZE));
+    if (tablePage > totalPages) tablePage = totalPages;
+
+    const start = (tablePage - 1) * TABLE_PAGE_SIZE;
+    const pageItems = filtered.slice(start, start + TABLE_PAGE_SIZE);
+
+    document.getElementById('sub-body').innerHTML = pageItems.map(x => {
+        const i = x._origIdx;
+        return `<tr class="${x.excluded ? 'excluded' : ''}" id="row-${i}">
+            <td style="color:var(--text);font-weight:600;">${x.username}</td>
+            <td style="color:var(--text3)">${x.date}</td>
+            <td>${tierBadge(x.tier)}</td>
+            <td>${x.tenure}</td><td>${x.streak}</td>
+            <td>${typeBadge(x.subType)}</td>
+            <td>${isFounder(x) ? '<span class="badge b-founder">是</span>' : '-'}</td>
+            <td><input type="number" value="${x.customMult !== undefined ? x.customMult : getTierBase(x.tier)}" min="0" max="9999" style="width:60px;text-align:center;padding:4px 6px" onchange="setCustomMult(${i},this.value)"></td>
+            <td><button class="btn btn-sm ${x.excluded ? 'btn-accent' : 'btn-danger'}" onclick="toggleExclude(${i})">${x.excluded ? '恢復' : '排除'}</button></td>
+        </tr>`;
+    }).join('');
+
+    renderTablePagination(total, totalPages);
+}
+
+let tableSearchTimer = null;
+function onTableSearch(val) {
+    clearTimeout(tableSearchTimer);
+    tableSearchTimer = setTimeout(() => {
+        tableFilter = val.trim();
+        tablePage = 1;
+        renderTable();
+    }, 200);
+}
+
+function renderTablePagination(total, totalPages) {
+    const pager = document.getElementById('table-pager');
+    if (totalPages <= 1) {
+        pager.innerHTML = `<span style="font-size:12px;color:var(--text3)">共 ${(total).toLocaleString()} 筆</span>`;
+        return;
+    }
+    const start = (tablePage - 1) * TABLE_PAGE_SIZE + 1;
+    const end = Math.min(tablePage * TABLE_PAGE_SIZE, total);
+    const prevDisabled = tablePage <= 1;
+    const nextDisabled = tablePage >= totalPages;
+
+    let pageButtons = '';
+    const range = 2;
+    for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || (p >= tablePage - range && p <= tablePage + range)) {
+            pageButtons += `<button class="btn btn-sm${p === tablePage ? ' btn-accent' : ''}" onclick="gotoTablePage(${p})">${p}</button>`;
+        } else if (p === tablePage - range - 1 || p === tablePage + range + 1) {
+            pageButtons += `<span style="color:var(--text3);font-size:12px;padding:0 2px">…</span>`;
+        }
+    }
+
+    pager.innerHTML = `
+        <span style="font-size:12px;color:var(--text3)">${start}–${end} / ${(total).toLocaleString()} 筆</span>
+        <button class="btn btn-sm" onclick="gotoTablePage(${tablePage - 1})" ${prevDisabled ? 'disabled' : ''}>‹</button>
+        ${pageButtons}
+        <button class="btn btn-sm" onclick="gotoTablePage(${tablePage + 1})" ${nextDisabled ? 'disabled' : ''}>›</button>
+    `;
+}
+
+function gotoTablePage(p) {
+    const keyword = tableFilter.toLowerCase();
+    const filtered = keyword
+        ? state.subscribers.filter(x => x.username.toLowerCase().includes(keyword))
+        : state.subscribers;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE));
+    tablePage = Math.max(1, Math.min(p, totalPages));
+    const filtered2 = keyword
+        ? state.subscribers.filter((x, i) => { x._origIdx = i; return x.username.toLowerCase().includes(keyword); })
+        : state.subscribers.map((x, i) => { x._origIdx = i; return x; });
+    const start = (tablePage - 1) * TABLE_PAGE_SIZE;
+    const pageItems = filtered2.slice(start, start + TABLE_PAGE_SIZE);
+    document.getElementById('sub-body').innerHTML = pageItems.map(x => {
+        const i = x._origIdx;
+        return `<tr class="${x.excluded ? 'excluded' : ''}" id="row-${i}">
+            <td style="color:var(--text);font-weight:600;">${x.username}</td>
+            <td style="color:var(--text3)">${x.date}</td>
+            <td>${tierBadge(x.tier)}</td>
+            <td>${x.tenure}</td><td>${x.streak}</td>
+            <td>${typeBadge(x.subType)}</td>
+            <td>${isFounder(x) ? '<span class="badge b-founder">是</span>' : '-'}</td>
+            <td><input type="number" value="${x.customMult !== undefined ? x.customMult : getTierBase(x.tier)}" min="0" max="9999" style="width:60px;text-align:center;padding:4px 6px" onchange="setCustomMult(${i},this.value)"></td>
+            <td><button class="btn btn-sm ${x.excluded ? 'btn-accent' : 'btn-danger'}" onclick="toggleExclude(${i})">${x.excluded ? '恢復' : '排除'}</button></td>
+        </tr>`;
+    }).join('');
+    renderTablePagination(filtered2.length, totalPages);
+    document.getElementById('table-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function setCustomMult(i, v) {
@@ -683,30 +803,94 @@ function toggleExclude(i) {
     state.subscribers[i].excluded = !state.subscribers[i].excluded;
     saveSession();
     renderTable();
-    renderOverrides();
+    if (document.getElementById('page-settings').classList.contains('active')) {
+        renderOverrides();
+    }
     refreshDraw();
 }
 
-// ── Overrides ──
+// ── Overrides（分頁版，全量顯示）──
 function renderOverrides() {
-    const el = document.getElementById('custom-overrides-wrap');
-    if (!state.subscribers.length) {
-        el.innerHTML = '<div class="empty">請先匯入訂閱者資料</div>';
+    const empty = document.getElementById('overrides-empty');
+    const tableWrap = document.getElementById('overrides-table-wrap');
+    const hasData = state.subscribers.length > 0;
+
+    empty.style.display = hasData ? 'none' : 'block';
+    tableWrap.style.display = hasData ? 'block' : 'none';
+    if (!hasData) return;
+
+    const keyword = overrideFilter.toLowerCase();
+    const filtered = keyword
+        ? state.subscribers.map((s, i) => ({ s, i })).filter(({ s }) => s.username.toLowerCase().includes(keyword))
+        : state.subscribers.map((s, i) => ({ s, i }));
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / OVERRIDE_PAGE_SIZE));
+    if (overridePage > totalPages) overridePage = totalPages;
+    const start = (overridePage - 1) * OVERRIDE_PAGE_SIZE;
+    const pageItems = filtered.slice(start, start + OVERRIDE_PAGE_SIZE);
+
+    document.getElementById('override-search-hint').textContent =
+        keyword ? `找到 ${(total).toLocaleString()} 筆` : `共 ${(state.subscribers.length).toLocaleString()} 筆`;
+
+    document.getElementById('override-tbody').innerHTML = pageItems.map(({ s, i }) => `
+        <tr>
+            <td style="font-weight:600;color:var(--text)">${s.username}</td>
+            <td>${tierBadge(s.tier)}</td>
+            <td>${typeBadge(s.subType)}</td>
+            <td>${isFounder(s) ? '<span class="badge b-founder">是</span>' : '-'}</td>
+            <td><input type="number" value="${s.customMult !== undefined ? s.customMult : getTierBase(s.tier)}"
+                min="0" max="9999" style="width:70px;text-align:center;padding:4px 6px"
+                onchange="setCustomMult(${i},this.value)"></td>
+            <td style="${getTickets(s) > 0 ? 'color:var(--accent);font-weight:600' : ''}">${getTickets(s)}</td>
+            <td><button class="btn btn-sm ${s.excluded ? 'btn-accent' : 'btn-danger'}"
+                onclick="toggleExclude(${i})">${s.excluded ? '恢復' : '排除'}</button></td>
+        </tr>
+    `).join('');
+
+    const pager = document.getElementById('override-pager');
+    if (totalPages <= 1) {
+        pager.innerHTML = `<span style="font-size:12px;color:var(--text3)">共 ${(total).toLocaleString()} 筆</span>`;
         return;
     }
-    el.innerHTML = `<div class="table-wrap"><table>
-                <thead><tr><th>觀眾帳號</th><th>訂閱層級</th><th>訂閱類型</th><th>創建者</th><th>自訂票數</th><th>實際票數</th><th></th></tr></thead>
-                <tbody>${state.subscribers.map((s, i) => `
-                <tr>
-                    <td style="font-weight:600;color:var(--text)">${s.username}</td>
-                    <td>${tierBadge(s.tier)}</td><td>${typeBadge(s.subType)}</td>
-                    <td>${isFounder(s) ? '<span class="badge b-founder">是</span>' : '-'}</td>
-                    <td><input type="number" value="${s.customMult !== undefined ? s.customMult : getTierBase(s.tier)}" min="0" max="9999" style="width:70px;text-align:center;padding:4px 6px" onchange="setCustomMult(${i},this.value)"></td>
-                    <td style="${getTickets(s) > 0 ? 'color:var(--accent);font-weight:600' : ''}">${getTickets(s)}</td>
-                    <td><button class="btn btn-sm ${s.excluded ? 'btn-accent' : 'btn-danger'}" onclick="toggleExclude(${i})">${s.excluded ? '恢復' : '排除'}</button></td>
-                </tr>
-                `).join('')}</tbody>
-            </table></div>`;
+    const rangeStart = start + 1;
+    const rangeEnd = Math.min(overridePage * OVERRIDE_PAGE_SIZE, total);
+    const range = 2;
+    let pageButtons = '';
+    for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || (p >= overridePage - range && p <= overridePage + range)) {
+            pageButtons += `<button class="btn btn-sm${p === overridePage ? ' btn-accent' : ''}" onclick="gotoOverridePage(${p})">${p}</button>`;
+        } else if (p === overridePage - range - 1 || p === overridePage + range + 1) {
+            pageButtons += `<span style="color:var(--text3);font-size:12px;padding:0 2px">…</span>`;
+        }
+    }
+    pager.innerHTML = `
+        <span style="font-size:12px;color:var(--text3)">${rangeStart}–${rangeEnd} / ${(total).toLocaleString()} 筆</span>
+        <button class="btn btn-sm" onclick="gotoOverridePage(${overridePage - 1})" ${overridePage <= 1 ? 'disabled' : ''}>‹</button>
+        ${pageButtons}
+        <button class="btn btn-sm" onclick="gotoOverridePage(${overridePage + 1})" ${overridePage >= totalPages ? 'disabled' : ''}>›</button>
+    `;
+}
+
+let overrideSearchTimer = null;
+function onOverrideSearch(val) {
+    clearTimeout(overrideSearchTimer);
+    overrideSearchTimer = setTimeout(() => {
+        overrideFilter = val.trim();
+        overridePage = 1;
+        renderOverrides();
+    }, 200);
+}
+
+function gotoOverridePage(p) {
+    const keyword = overrideFilter.toLowerCase();
+    const filtered = keyword
+        ? state.subscribers.filter(s => s.username.toLowerCase().includes(keyword))
+        : state.subscribers;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / OVERRIDE_PAGE_SIZE));
+    overridePage = Math.max(1, Math.min(p, totalPages));
+    renderOverrides();
+    document.getElementById('custom-overrides-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Draw ──
@@ -724,7 +908,7 @@ function refreshDraw() {
         [state.subscribers.length - pool.length, '已排除'],
         [winnersSet ? winnersSet.size : 0, '已中獎'],
         [totalTickets, '總票數']
-    ].map(([n, l]) => `<div class="stat-card"><div class="stat-n">${n}</div><div class="stat-l">${l}</div></div>`).join('');
+    ].map(([n, l]) => `<div class="stat-card"><div class="stat-n">${(n).toLocaleString()}</div><div class="stat-l">${l}</div></div>`).join('');
     const sorted = [...eligible].sort((a, b) => getTickets(b) - getTickets(a)).slice(0, 15);
     const maxT = sorted[0] ? getTickets(sorted[0]) : 1;
     document.getElementById('pool-preview').innerHTML = sorted.map(s => {
@@ -739,18 +923,70 @@ function refreshDraw() {
                     <div class="pool-bar"><div class="pool-fill" style="width:${w}%"></div></div>
                 </div>`;
     }).join('');
+
+    updateDrawDurationPresetUI();
+    const customInput = document.getElementById('draw-duration-custom');
+    if (customInput) customInput.value = getDrawDuration();
 }
 
+const LS_DRAW_DURATION = 'lottery_draw_duration';
+
+function getDrawDuration() {
+    return parseInt(localStorage.getItem(LS_DRAW_DURATION)) || 3;
+}
+
+function setDrawDuration(sec) {
+    sec = Math.max(1, Math.min(60, parseInt(sec) || 3));
+    localStorage.setItem(LS_DRAW_DURATION, sec);
+    const input = document.getElementById('draw-duration-custom');
+    if (input) input.value = sec;
+    updateDrawDurationPresetUI();
+}
+
+function onDrawDurationCustom(val) {
+    const sec = Math.max(1, Math.min(60, parseInt(val) || 3));
+    localStorage.setItem(LS_DRAW_DURATION, sec);
+    updateDrawDurationPresetUI();
+}
+
+function updateDrawDurationPresetUI() {
+    const cur = getDrawDuration();
+    document.querySelectorAll('#draw-duration-presets button').forEach(btn => {
+        const sec = parseInt(btn.dataset.sec);
+        btn.className = sec === cur ? 'btn btn-sm btn-accent' : 'btn btn-sm';
+    });
+}
+
+// 建池
 function buildPool() {
-    const winnersSet = state.excludeWinners ?
-        new Set(state.history.map(h => h.username.toLowerCase())) : null;
-    const pool = [];
+    const winnersSet = state.excludeWinners
+        ? new Set(state.history.map(h => h.username.toLowerCase()))
+        : null;
+
+    const entries = [];
+    let cumulative = 0;
+
     state.subscribers.filter(s => !s.excluded).forEach(s => {
         if (winnersSet && winnersSet.has(s.username.toLowerCase())) return;
         const t = getTickets(s);
-        for (let i = 0; i < t; i++) pool.push(s);
+        if (t <= 0) return;
+        cumulative += t;
+        entries.push({ sub: s, weight: cumulative });
     });
-    return pool;
+
+    return { entries, total: cumulative };
+}
+
+// 新增權重
+function weightedPick(pool) {
+    const r = Math.random() * pool.total;
+    let lo = 0, hi = pool.entries.length - 1;
+    while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (pool.entries[mid].weight < r) lo = mid + 1;
+        else hi = mid;
+    }
+    return pool.entries[lo].sub;
 }
 
 function toggleExcludeWinner() {
@@ -787,33 +1023,112 @@ function getDrawCount() {
     return Math.max(1, prizeRemaining(prize));
 }
 
+function finishDrawAnimation(pool, drawCount) {
+    clearInterval(drawInterval);
+    drawInterval = null;
+
+    const drawBtn = document.getElementById('draw-btn');
+    const stopBtn = document.getElementById('stop-draw-btn');
+    drawBtn.disabled = false;
+    drawBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg> 開始抽獎`;
+    if (stopBtn) stopBtn.style.display = 'none';
+    document.getElementById('draw-duration-wrap').style.pointerEvents = '';
+    document.getElementById('draw-duration-wrap').style.opacity = '';
+
+    // 加權不重複抽樣：每抽到一人就從臨時池移除，保持機率正確
+    const tempEntries = pool.entries.map(e => ({ ...e }));   // 淺拷貝
+    const winners = [];
+    const pickedNames = new Set();
+    const need = Math.min(drawCount, tempEntries.length);
+
+    while (winners.length < need && tempEntries.length > 0) {
+        let cum = 0;
+        const rebuilt = tempEntries.map(e => {
+            cum += (e.weight - (e._prev || 0));
+            return { sub: e.sub, origTickets: e.sub._tickets ?? getTickets(e.sub), weight: 0 };
+        });
+
+        let cumTotal = 0;
+        const fresh = [];
+        for (const entry of tempEntries) {
+            const t = getTickets(entry.sub);
+            if (t <= 0) continue;
+            cumTotal += t;
+            fresh.push({ sub: entry.sub, weight: cumTotal });
+        }
+        if (!cumTotal) break;
+
+        const r = Math.random() * cumTotal;
+        let lo = 0, hi = fresh.length - 1;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (fresh[mid].weight < r) lo = mid + 1;
+            else hi = mid;
+        }
+        const picked = fresh[lo].sub;
+
+        if (!pickedNames.has(picked.username.toLowerCase())) {
+            winners.push(picked);
+            pickedNames.add(picked.username.toLowerCase());
+        }
+
+        const idx = tempEntries.findIndex(e => e.sub.username === picked.username);
+        if (idx >= 0) tempEntries.splice(idx, 1);
+    }
+
+    showWinner(winners, pool.total);
+}
+
+function stopDraw() {
+    if (!drawInterval) return;
+    const stage = document.getElementById('draw-stage');
+    const nameEl = stage.querySelector('.roll-name');
+    finishDrawAnimation(window._pendingDrawPool, window._pendingDrawCount);
+}
+
 function startDraw() {
     const pool = buildPool();
-    if (!pool.length) {
-        toast('抽獎池為空');
-        return;
-    }
+    if (!pool.entries.length) { toast('抽獎池為空'); return; }
     if (drawInterval) clearInterval(drawInterval);
-    document.getElementById('draw-btn').disabled = true;
+
+    const drawBtn = document.getElementById('draw-btn');
+    const stopBtn = document.getElementById('stop-draw-btn');
+    drawBtn.disabled = true;
     document.getElementById('draw-again-btn').style.display = 'none';
+    if (stopBtn) stopBtn.style.display = 'inline-flex';
+
+    const durationWrap = document.getElementById('draw-duration-wrap');
+    if (durationWrap) { durationWrap.style.pointerEvents = 'none'; durationWrap.style.opacity = '0.4'; }
+
     const drawCount = getDrawCount();
+    window._pendingDrawPool = pool;
+    window._pendingDrawCount = drawCount;
+
+    const uniqueSubs = [...new Map(pool.entries.map(e => [e.sub.username.toLowerCase(), e.sub])).values()];
+    for (let i = uniqueSubs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [uniqueSubs[i], uniqueSubs[j]] = [uniqueSubs[j], uniqueSubs[i]];
+    }
+    let rollIdx = 0;
+
     const stage = document.getElementById('draw-stage');
     let tick = 0;
-    const total = 24 + Math.floor(Math.random() * 10);
+    const total = Math.round(getDrawDuration() * 1000 / 80);
+
     drawInterval = setInterval(() => {
-        const r = pool[Math.floor(Math.random() * pool.length)];
+        if (rollIdx >= uniqueSubs.length) {
+            rollIdx = 0;
+            for (let i = uniqueSubs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [uniqueSubs[i], uniqueSubs[j]] = [uniqueSubs[j], uniqueSubs[i]];
+            }
+        }
+        const r = uniqueSubs[rollIdx++];
         stage.innerHTML = `<div class="draw-rolling"><div class="roll-name">${r.username}</div></div>`;
         tick++;
-        if (tick >= total) {
-            clearInterval(drawInterval);
-            const unique = [...new Map(pool.map(s => [s.username, s])).values()];
-            for (let i = unique.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [unique[i], unique[j]] = [unique[j], unique[i]];
-            }
-            const winners = unique.slice(0, Math.min(drawCount, unique.length));
-            showWinner(winners, pool.length);
-        }
+        const remainSec = Math.max(1, Math.ceil((total - tick) * 80 / 1000));
+        drawBtn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg> ${remainSec}s`;
+        if (tick >= total) finishDrawAnimation(pool, drawCount);
     }, 80);
 }
 
@@ -833,11 +1148,11 @@ function showWinner(winners, poolSize) {
                 </div>`;
     } else {
         stage.innerHTML = `
-                <div style="text-align:center;margin-bottom:10px">
+                <div style="text-align:center;margin-bottom:10px;margin-top:10px">
                     <div style="font-size:12px;color:var(--text3);letter-spacing:0.08em">— 恭喜以下 ${winners.length} 位得獎者 —</div>
                     ${prize ? `<div style="margin-top:6px"><span class="prize-tag">${prize.name}</span></div>` : ''}
                 </div>
-                <div class="multi-winner-list">
+                <div class="multi-winner-list" style="margin-bottom:10px;">
                     ${winners.map((w, i) => `
                         <div class="multi-winner-item" style="animation-delay:${i * 0.06}s">
                             <div class="mw-rank">#${state.history.length + i + 1}</div>
@@ -852,7 +1167,6 @@ function showWinner(winners, poolSize) {
     winners.forEach(w => {
         const tickets = getTickets(w);
         const pct = poolSize > 0 ? (tickets / poolSize * 100).toFixed(2) : '0.00';
-        startDrawEffect();
         state.history.push({
             username: w.username,
             tier: w.tier,
@@ -866,6 +1180,7 @@ function showWinner(winners, poolSize) {
             session: state.sessionName
         });
     });
+    startDrawEffect();
     saveSession();
     renderHistory();
     renderPrizes();
@@ -907,6 +1222,7 @@ function clearHistory() {
     renderHistory();
     renderPrizes();
     updatePrizePickBtn();
+    refreshDraw();
     toast('紀錄已清除');
     const stage = document.getElementById('draw-stage');
     stage.innerHTML = `<div class="draw-idle">按下「開始抽獎」</div>`;
@@ -946,6 +1262,12 @@ function createSession() {
 function switchSession(id) {
     if (loadSession(id)) {
         saveSession();
+        tablePage = 1;
+        tableFilter = '';
+        overridePage = 1;
+        overrideFilter = '';
+        const oi = document.getElementById('override-search-input');
+        if (oi) oi.value = '';
         applyState();
         toast('已切換至：' + state.sessionName);
     }
@@ -1167,7 +1489,6 @@ function refreshExportSelect() {
             return `<option value="${id}" ${isActive ? 'selected' : ''}>${s.name || '未命名'}${isActive ? ' [目前]' : ''}</option>`;
         }).join('');
     sel.onchange = updateExportPreview;
-    // trigger preview for current session
     updateExportPreview();
 }
 
@@ -1298,7 +1619,6 @@ function validateAndPreviewImport(data, filename) {
     let isSingle = false;
 
     if (data._type === 'lottery_session_export' && data.session) {
-        // Single session export
         isSingle = true;
         const s = data.session;
         sessions[s.id || ('imported_' + Date.now())] = {
@@ -1312,7 +1632,6 @@ function validateAndPreviewImport(data, filename) {
             updatedAt: s.updatedAt || Date.now()
         };
     } else if (data._type === 'lottery_all_sessions_export' && data.sessions) {
-        // All sessions export
         sessions = data.sessions;
     } else {
         toast('不支援的檔案格式');
@@ -1324,7 +1643,6 @@ function validateAndPreviewImport(data, filename) {
         filename
     };
 
-    // Show preview
     const sessionKeys = Object.keys(sessions);
     const existing = getAllSessions();
     const conflicts = sessionKeys.filter(id => {
@@ -1375,7 +1693,6 @@ function confirmImport() {
                 skippedCount++;
                 continue;
             } else if (conflictMode === 'rename') {
-                // Find existing key with same name and add suffix
                 const newId = 'imported_' + Date.now() + '_' + importedCount;
                 existing[newId] = {
                     ...sessionData,
@@ -1383,7 +1700,6 @@ function confirmImport() {
                 };
                 importedCount++;
             } else {
-                // overwrite: find and replace
                 const existingKey = Object.keys(existing).find(k => existing[k].name === sessionData.name);
                 if (existingKey) {
                     existing[existingKey] = sessionData;
@@ -1393,7 +1709,6 @@ function confirmImport() {
                 importedCount++;
             }
         } else {
-            // No conflict, just import with new id to avoid key collision
             const newId = Object.keys(existing).includes(id) ? ('imported_' + Date.now() + '_' + importedCount) : id;
             existing[newId] = sessionData;
             importedCount++;
@@ -1408,7 +1723,6 @@ function confirmImport() {
 
     cancelImport();
 
-    // 重新載入 state，確保 UI 完整刷新
     if (!loadSession(state.sessionId)) {
         const keys = Object.keys(getAllSessions());
         if (keys.length) loadSession(keys[0]);
@@ -1438,80 +1752,55 @@ function clearAllData() {
 
 function startDrawEffect() {
     const stage = document.getElementById("draw-stage");
-
-    // 第一段：集中蓄力（慢一點）
     charge(stage);
-
-    // 第二段：瞬間爆炸（驚喜點）
     setTimeout(() => explode(stage), 700);
 }
 
-// 🔋 蓄力（往中心吸）
 function charge(stage) {
     for (let i = 0; i < 60; i++) {
         let c = create(stage);
-
         let fromLeft = i % 2 === 0;
         c.style.bottom = "0px";
         if (fromLeft) c.style.left = "0px";
         else c.style.right = "0px";
-
         let x = fromLeft ? stage.clientWidth * 0.5 : -stage.clientWidth * 0.5;
         let y = -stage.clientHeight * 0.5;
-
         c.animate([{
             transform: "translate(0,0) scale(1)"
-        },
-        {
+        }, {
             transform: `translate(${x}px, ${y}px) scale(0.3)`
-        }
-        ], {
+        }], {
             duration: 700,
             easing: "ease-in"
         });
-
         setTimeout(() => c.remove(), 700);
     }
 }
 
-// 💥 爆炸 + 彩帶雨
 function explode(stage) {
     for (let i = 0; i < 180; i++) {
         let c = create(stage);
-
         c.style.left = "50%";
         c.style.top = "50%";
-
-        // 爆炸方向
         let angle = Math.random() * Math.PI * 2;
         let speed = Math.random() * 12 + 6;
-
         let vx = Math.cos(angle) * speed;
-        let vy = Math.sin(angle) * speed - 8; // 往上多一點
-
-        let x = 0,
-            y = 0;
+        let vy = Math.sin(angle) * speed - 8;
+        let x = 0, y = 0;
         let gravity = 0.5;
         let rotate = Math.random() * 360;
-
         function animate() {
             vy += gravity;
             x += vx;
             y += vy;
-
-            c.style.transform =
-                `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotate}deg)`;
-
+            c.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotate}deg)`;
             rotate += 12;
-
             if (y > stage.clientHeight / 2 + 50) {
                 c.remove();
                 return;
             }
-
             requestAnimationFrame(animate);
         }
-
         animate();
     }
 }
@@ -1525,10 +1814,7 @@ function create(stage) {
 }
 
 function randomColor() {
-    const colors = [
-        "#ff4757", "#ff6b81", "#ffa502",
-        "#eccc68", "#2ed573", "#1e90ff"
-    ];
+    const colors = ["#ff4757", "#ff6b81", "#ffa502", "#eccc68", "#2ed573", "#1e90ff"];
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
