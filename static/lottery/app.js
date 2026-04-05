@@ -1035,37 +1035,45 @@ function finishDrawAnimation(pool, drawCount) {
     document.getElementById('draw-duration-wrap').style.pointerEvents = '';
     document.getElementById('draw-duration-wrap').style.opacity = '';
 
-    const tempEntries = pool.entries.map(e => ({ ...e }));
     const winners = [];
-    const pickedNames = new Set();
-    const need = Math.min(drawCount, tempEntries.length);
+    const need = drawCount;
 
-    while (winners.length < need && tempEntries.length > 0) {
-        let cumTotal = 0;
-        const fresh = [];
-        for (const entry of tempEntries) {
-            const t = getTickets(entry.sub);
-            if (t <= 0) continue;
-            cumTotal += t;
-            fresh.push({ sub: entry.sub, weight: cumTotal });
+    if (state.excludeWinners) {
+        const tempEntries = pool.entries.map(e => ({ ...e }));
+        const pickedNames = new Set();
+
+        while (winners.length < need && tempEntries.length > 0) {
+            let cumTotal = 0;
+            const fresh = [];
+            for (const entry of tempEntries) {
+                const t = getTickets(entry.sub);
+                if (t <= 0) continue;
+                cumTotal += t;
+                fresh.push({ sub: entry.sub, weight: cumTotal });
+            }
+            if (!cumTotal) break;
+
+            const r = Math.random() * cumTotal;
+            let lo = 0, hi = fresh.length - 1;
+            while (lo < hi) {
+                const mid = (lo + hi) >> 1;
+                if (fresh[mid].weight < r) lo = mid + 1;
+                else hi = mid;
+            }
+            const picked = fresh[lo].sub;
+
+            if (!pickedNames.has(picked.username.toLowerCase())) {
+                winners.push(picked);
+                pickedNames.add(picked.username.toLowerCase());
+            }
+            const idx = tempEntries.findIndex(e => e.sub.username === picked.username);
+            if (idx >= 0) tempEntries.splice(idx, 1);
         }
-        if (!cumTotal) break;
-
-        const r = Math.random() * cumTotal;
-        let lo = 0, hi = fresh.length - 1;
-        while (lo < hi) {
-            const mid = (lo + hi) >> 1;
-            if (fresh[mid].weight < r) lo = mid + 1;
-            else hi = mid;
-        }
-        const picked = fresh[lo].sub;
-
-        if (!pickedNames.has(picked.username.toLowerCase())) {
+    } else {
+        for (let i = 0; i < need; i++) {
+            const picked = weightedPick(pool);
             winners.push(picked);
-            pickedNames.add(picked.username.toLowerCase());
         }
-        const idx = tempEntries.findIndex(e => e.sub.username === picked.username);
-        if (idx >= 0) tempEntries.splice(idx, 1);
     }
 
     showWinner(winners, pool.total);
