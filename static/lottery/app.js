@@ -1035,19 +1035,12 @@ function finishDrawAnimation(pool, drawCount) {
     document.getElementById('draw-duration-wrap').style.pointerEvents = '';
     document.getElementById('draw-duration-wrap').style.opacity = '';
 
-    // 加權不重複抽樣：每抽到一人就從臨時池移除，保持機率正確
-    const tempEntries = pool.entries.map(e => ({ ...e }));   // 淺拷貝
+    const tempEntries = pool.entries.map(e => ({ ...e }));
     const winners = [];
     const pickedNames = new Set();
     const need = Math.min(drawCount, tempEntries.length);
 
     while (winners.length < need && tempEntries.length > 0) {
-        let cum = 0;
-        const rebuilt = tempEntries.map(e => {
-            cum += (e.weight - (e._prev || 0));
-            return { sub: e.sub, origTickets: e.sub._tickets ?? getTickets(e.sub), weight: 0 };
-        });
-
         let cumTotal = 0;
         const fresh = [];
         for (const entry of tempEntries) {
@@ -1071,7 +1064,6 @@ function finishDrawAnimation(pool, drawCount) {
             winners.push(picked);
             pickedNames.add(picked.username.toLowerCase());
         }
-
         const idx = tempEntries.findIndex(e => e.sub.username === picked.username);
         if (idx >= 0) tempEntries.splice(idx, 1);
     }
