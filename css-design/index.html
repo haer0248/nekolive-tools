@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex">
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no">
+
+        <link rel="stylesheet" href="/static/css-design/styles.min.css" />
+    </head>
+
+    <body>
+        <div class="topbar">
+            <button class="hamburger" id="hamburger" aria-label="開啟選單">☰</button>
+            <span class="topbar-title">CSS 樣式設計</span>
+        </div>
+
+        <div class="layout">
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-brand">
+                    <h1>CSS 樣式設計</h1>
+                    <p>// Design by 猫又おにぎり</p>
+                </div>
+                <ul class="sidebar-nav">
+                    <li><a href="#overview" class="active">Overview</a></li>
+                    <li><a href="#cards">Cards</a></li>
+                    <li><a href="#buttons">Buttons</a></li>
+                    <li><a href="#forms">Forms</a></li>
+                    <li><a href="#messages">Messages</a></li>
+                    <li><a href="#badges">Badges</a></li>
+                    <li><a href="#table">Table</a></li>
+                    <li><a href="#modals">Modals</a></li>
+                    <li><a href="#code">Code</a></li>
+                </ul>
+            </aside>
+
+            <main class="main">
+                <header class="page-header">
+                    <h2>CSS 樣式設計</h2>
+                    <p>// Design by 猫又おにぎり</p>
+                </header>
+
+                <section id="overview">
+                    <h3 class="section-title"># Overview</h3>
+                    <div class="card-grid">
+                        <div class="card">
+                            <div class="card-title">Total Donations</div>
+                            <div class="card-value">NT$ 12,480</div>
+                            <div class="card-meta">過去 30 天</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Active Streamers</div>
+                            <div class="card-value">247</div>
+                            <div class="card-meta">+12 本週</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Songs Played</div>
+                            <div class="card-value">1,892</div>
+                            <div class="card-meta">本月累計</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Usage</div>
+                            <div class="card-value">99.97%</div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 99.97%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="cards">
+                    <h3 class="section-title"># Cards</h3>
+                    <div class="two-col">
+                        <div class="card">
+                            <div class="card-title">Primary Card</div>
+                            <p style="margin: 12px 0; font-size: 13px; color: var(--text-secondary);">
+                                簡潔的卡片樣式，使用無圓角邊框與單色背景，符合設計系統規範。
+                            </p>
+                            <div class="btn-group">
+                                <button class="btn btn-primary">Action</button>
+                                <button class="btn">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Status Card</div>
+                            <div style="margin: 12px 0;">
+                                <span class="badge badge-success">ONLINE</span>
+                                <span class="badge badge-accent">v2.4.1</span>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                最後更新：<span style="color: var(--text-primary);">2026-04-29 14:32</span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="buttons">
+                    <h3 class="section-title"># Buttons</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-primary">Primary</button>
+                        <button class="btn">Secondary</button>
+                        <button class="btn btn-danger">Delete</button>
+                        <button class="btn btn-success">Success</button>
+                        <button class="btn" disabled>Disabled</button>
+                    </div>
+                </section>
+
+                <section id="forms">
+                    <h3 class="section-title"># Forms</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Stream Title</label>
+                            <input type="text" class="form-input" placeholder="輸入直播標題" value="-w-">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-select">
+                                <option>Just Chatting</option>
+                                <option>Apex Legends</option>
+                                <option>Music</option>
+                                <option>Art</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" placeholder="// 直播描述">雖然我們對他不太認識，但是我們敢保證猫又おにぎり超棒的。</textarea>
+                            <div class="form-help">支援 Markdown 語法</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb1" checked>
+                            <label for="cb1">啟用通知</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb2">
+                            <label for="cb2">公開顯示個人資訊</label>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="messages">
+                    <h3 class="section-title"># Messages</h3>
+                    <div class="message message-success">✓ 設定已成功儲存</div>
+                    <div class="message message-warning">⚠ 此操作無法復原，請確認</div>
+                    <div class="message message-error">✕ 連線失敗：MariaDB connection refused</div>
+                    <div class="message message-info">ℹ 系統將於 03:00 進行例行維護</div>
+                </section>
+
+                <section id="badges">
+                    <h3 class="section-title"># Badges</h3>
+                    <div class="btn-group">
+                        <span class="badge badge-accent">FEATURED</span>
+                        <span class="badge badge-success">ACTIVE</span>
+                        <span class="badge badge-warning">PENDING</span>
+                        <span class="badge badge-muted">ARCHIVED</span>
+                    </div>
+                </section>
+
+                <section id="table">
+                    <h3 class="section-title"># Table</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#10247</td>
+                                    <td>haer0248</td>
+                                    <td style="color: var(--accent);">NT$ 500</td>
+                                    <td><span class="badge badge-success">PAID</span></td>
+                                    <td style="color: var(--text-muted);">14:32:08</td>
+                                </tr>
+                                <tr>
+                                    <td>#10246</td>
+                                    <td>anonymous</td>
+                                    <td style="color: var(--accent);">NT$ 100</td>
+                                    <td><span class="badge badge-warning">PENDING</span></td>
+                                    <td style="color: var(--text-muted);">14:28:51</td>
+                                </tr>
+                                <tr>
+                                    <td>#10245</td>
+                                    <td>nekofan_01</td>
+                                    <td style="color: var(--accent);">NT$ 1,000</td>
+                                    <td><span class="badge badge-success">PAID</span></td>
+                                    <td style="color: var(--text-muted);">14:21:03</td>
+                                </tr>
+                                <tr>
+                                    <td>#10244</td>
+                                    <td>guest_user</td>
+                                    <td style="color: var(--accent);">NT$ 50</td>
+                                    <td><span class="badge badge-muted">REFUNDED</span></td>
+                                    <td style="color: var(--text-muted);">14:15:42</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="modals">
+                    <h3 class="section-title"># Modals</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                        點擊按鈕開啟對應的 Modal 範例。支援 ESC 鍵與點擊遮罩關閉。
+                    </p>
+                    <div class="btn-group">
+                        <button class="btn" data-modal-open="modalInfo">Info Modal</button>
+                        <button class="btn btn-primary" data-modal-open="modalForm">Form Modal</button>
+                        <button class="btn btn-danger" data-modal-open="modalConfirm">Confirm Delete</button>
+                    </div>
+                </section>
+
+                <section id="code">
+                    <h3 class="section-title"># Code</h3>
+                    <pre class="code-block">function handleProblem(problem) {
+    if (problem.isSolvable) {
+        return "No need to worry.";
+    } else {
+        return "Call ChatGPT!!!";
+    }
+}
+
+// final decision
+console.log("Sleep.");</pre>
+                </section>
+
+                <footer>
+                    // <a href="https://haer0248.me" target="_blank">猫又おにぎり</a>
+                </footer>
+            </main>
+        </div>
+
+        <!-- Info Modal -->
+        <div class="modal-backdrop" id="modalInfo" data-modal>
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title"># 系統資訊</span>
+                    <button class="modal-close" data-modal-close aria-label="關閉">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>這是一個資訊類型的 Modal，用於顯示說明文字、版本資訊或操作指引。</p>
+                    <p>當前版本：<span style="color: var(--accent);">v2.4.1</span></p>
+                    <p>最後更新時間：<span style="color: var(--text-primary);">2026-04-29 14:32</span></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-modal-close>了解</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Modal -->
+        <div class="modal-backdrop" id="modalForm" data-modal>
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title"># 新增項目</span>
+                    <button class="modal-close" data-modal-close aria-label="關閉">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">名稱</label>
+                        <input type="text" class="form-input" placeholder="輸入名稱">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">類型</label>
+                        <select class="form-select">
+                            <option>選擇類型</option>
+                            <option>類型 A</option>
+                            <option>類型 B</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">備註</label>
+                        <textarea class="form-textarea" placeholder="// 選填"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-modal-close>取消</button>
+                    <button class="btn btn-primary">建立</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Modal -->
+        <div class="modal-backdrop" id="modalConfirm" data-modal>
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title" style="color: var(--error-fg);"># 確認刪除</span>
+                    <button class="modal-close" data-modal-close aria-label="關閉">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="message message-warning" style="margin-bottom: 12px;">
+                        ⚠ 此操作無法復原
+                    </div>
+                    <p>你即將刪除以下資料：</p>
+                    <p style="color: var(--accent); padding: 8px 12px; background-color: var(--bg-tertiary); border-left: 2px solid var(--accent); margin: 8px 0;">
+                        stream_record_#10244
+                    </p>
+                    <p>確定要繼續嗎？</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-modal-close>取消</button>
+                    <button class="btn btn-danger">永久刪除</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburger');
+
+            function openSidebar() {
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+            }
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            }
+
+            hamburger.addEventListener('click', openSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.addEventListener('click', function () {
+                    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                    if (window.innerWidth <= 768) closeSidebar();
+                });
+            });
+
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            function updateActiveLink() {
+                let current = '';
+                sections.forEach(section => {
+                    const top = section.offsetTop - 100;
+                    if (window.scrollY >= top) current = section.getAttribute('id');
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+                });
+            }
+            window.addEventListener('scroll', updateActiveLink);
+
+            function openModal(id) {
+                const modal = document.getElementById(id);
+                if (!modal) return;
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeModal(modal) {
+                modal.classList.remove('show');
+                if (!document.querySelector('.modal-backdrop.show')) {
+                    document.body.style.overflow = '';
+                }
+            }
+            function closeAllModals() {
+                document.querySelectorAll('.modal-backdrop.show').forEach(m => closeModal(m));
+            }
+
+            document.querySelectorAll('[data-modal-open]').forEach(btn => {
+                btn.addEventListener('click', () => openModal(btn.dataset.modalOpen));
+            });
+            document.querySelectorAll('[data-modal-close]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = btn.closest('.modal-backdrop');
+                    if (modal) closeModal(modal);
+                });
+            });
+            document.querySelectorAll('[data-modal]').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal(modal);
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                    if (sidebar.classList.contains('open')) closeSidebar();
+                }
+            });
+        </script>
+    </body>
+
+</html>
