@@ -1,10 +1,13 @@
 // ── State ──
+const defaultBotNames = ['streamelements', 'nightbot', 'moobot', 'streamlabs', 'sery_bot'];
+
 let state = {
     sessionId: null,
     sessionName: '',
     subscribers: [],
     history: [],
     prizes: [],
+    botNames: [],
     mults: {
         t1: 1,
         t2: 5,
@@ -67,6 +70,7 @@ function saveSession() {
         mults: state.mults,
         recurringOnly: state.recurringOnly,
         excludeWinners: state.excludeWinners,
+        botNames: state.botNames,
         updatedAt: Date.now()
     };
     localStorage.setItem(LS_SESSIONS, JSON.stringify(sessions));
@@ -80,6 +84,7 @@ function loadSession(id) {
     state.sessionId = id;
     state.sessionName = s.name || '未命名場次';
     state.subscribers = s.subscribers || [];
+    state.botNames = s.botNames || [];
     state.history = s.history || [];
     state.prizes = s.prizes || [];
     state.mults = Object.assign({
@@ -113,6 +118,7 @@ function initDefaultSession() {
     state.subscribers = [];
     state.history = [];
     state.prizes = [];
+    state.botNames = [...defaultBotNames];
     state.recurringOnly = false;
     state.mults = {
         t1: 1,
@@ -150,6 +156,7 @@ function applyState() {
     applyExcludeWinnersUI();
     tablePage = 1;
     tableFilter = '';
+    renderBotList();
     renderTable();
     refreshDraw();
     renderHistory();
@@ -326,6 +333,7 @@ function isFounder(s) {
 
 function getTickets(s) {
     if (s.excluded) return 0;
+    if (state.botNames.includes(s.username.toLowerCase())) return 0;
     const base = s.customMult !== undefined ? s.customMult : getTierBase(s.tier);
     return Math.max(0, Math.round(base * getSubMult(s.subType) * (isFounder(s) ? state.mults.founder : 1)));
 }
@@ -337,6 +345,38 @@ function prizeUsedCount(prizeId) {
 
 function prizeRemaining(prize) {
     return Math.max(0, prize.qty - prizeUsedCount(prize.id));
+}
+
+function addBotName() {
+    const val = document.getElementById('bot-name-input').value.trim().toLowerCase();
+    if (!val) return;
+    if (state.botNames.includes(val)) { toast('已在清單中：' + val); return; }
+    state.botNames.push(val);
+    document.getElementById('bot-name-input').value = '';
+    saveSession(); renderBotList(); renderTable(); refreshDraw(); renderOverrides();
+    toast('已加入機器人清單：' + val);
+}
+
+function removeBotName(name) {
+    state.botNames = state.botNames.filter(n => n !== name);
+    saveSession(); renderBotList(); renderTable(); refreshDraw(); renderOverrides();
+}
+
+function renderBotList() {
+    const el = document.getElementById('bot-name-list');
+    const countEl = document.getElementById('bot-list-count');
+    if (!el) return;
+    countEl.textContent = state.botNames.length + ' 個';
+    if (!state.botNames.length) {
+        el.innerHTML = '<span style="font-size:12px;color:var(--text3)">尚未加入任何機器人帳號</span>';
+        return;
+    }
+    el.innerHTML = state.botNames.map(name => `
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;font-size:12px;color:var(--text2)">
+            ${name}
+            <button onclick="removeBotName('${name}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:0;line-height:1;font-size:14px" title="移除">×</button>
+        </span>
+    `).join('');
 }
 
 // ── CSV Parse ──
@@ -1204,7 +1244,7 @@ function showWinner(winners, poolSize) {
                 </div>`;
     }
     document.getElementById('draw-btn').disabled = false;
-    
+
     winners.forEach(w => {
         const tickets = getTickets(w);
         const pct = poolSize > 0 ? (tickets / poolSize * 100).toFixed(2) : '0.00';
@@ -1280,6 +1320,7 @@ function createSession() {
     state.sessionId = id;
     state.sessionName = name;
     state.subscribers = [];
+    state.botNames = [...defaultBotNames];
     state.history = [];
     state.prizes = [];
     state.recurringOnly = false;
