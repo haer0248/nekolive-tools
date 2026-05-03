@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+    </head>
+
+    <body>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans+TC:wght@100..900&display=swap');
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+
+            html,
+            body {
+                font-size: 150%;
+                width: 100%;
+                height: 100%;
+            }
+
+            body {
+                font-family: "Fira Code", monospace;
+            }
+
+            [data-time] {
+                display: flex;
+                position: relative;
+                letter-spacing: 2px;
+                padding: 1rem;
+                color: #ffffff;
+                height: 100vh;
+                text-shadow: rgb(0, 0, 0) 3px 0px, rgb(0, 0, 0) 2.83487px 0.981584px, rgb(0, 0, 0) 2.35766px 1.85511px, rgb(0, 0, 0) 1.62091px 2.52441px, rgb(0, 0, 0) 0.705713px 2.91581px, rgb(0, 0, 0) -0.287171px 2.98622px, rgb(0, 0, 0) -1.24844px 2.72789px, rgb(0, 0, 0) -2.07227px 2.16926px, rgb(0, 0, 0) -2.66798px 1.37182px, rgb(0, 0, 0) -2.96998px 0.42336px, rgb(0, 0, 0) -2.94502px -0.571704px, rgb(0, 0, 0) -2.59586px -1.50383px, rgb(0, 0, 0) -1.96093px -2.27041px, rgb(0, 0, 0) -1.11013px -2.78704px, rgb(0, 0, 0) -0.137119px -2.99686px, rgb(0, 0, 0) 0.850987px -2.87677px, rgb(0, 0, 0) 1.74541px -2.43999px, rgb(0, 0, 0) 2.44769px -1.73459px, rgb(0, 0, 0) 2.88051px -0.838247px;
+                align-items: flex-end;
+            }
+        </style>
+
+        <div data-time></div>
+
+        <script>
+            function initializePage() {
+                const userAgent = navigator.userAgent;
+                if (!userAgent.includes('OBS')) {
+                    document.getElementById('help-text').classList.remove('obs-hide');
+                }
+            }
+
+            function startClock() {
+                const clock = document.querySelector('div[data-time]');
+
+                function updateTime() {
+                    const unixTime = Math.floor(new Date().getTime() / 1000);
+                    const dateTime = new Date().toLocaleString('zh-tw', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+
+                    clock.innerHTML = `Unix Time: ${unixTime}<br>Date Time: ${dateTime}`;
+                }
+
+                updateTime();
+
+                setInterval(updateTime, 500);
+            }
+
+            document.addEventListener('DOMContentLoaded', startClock);
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+    </body>
+
+</html>
