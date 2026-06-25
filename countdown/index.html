@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="stylesheet" href="/static/countdown/style.min.css" />
+    </head>
+
+    <body>
+        <div id="generator">
+            <div class="gen-card">
+                <h2>倒數計時產生器</h2>
+
+                <div class="gen-toggle">
+                    <button class="gen-toggle-btn active" id="btn-year" onclick="setMode('year')">每年倒數</button>
+                    <button class="gen-toggle-btn" id="btn-custom" onclick="setMode('custom')">自訂目標時間</button>
+                </div>
+
+                <div id="mode-year">
+                    <div class="gen-field">
+                        <label>倒數年份</label>
+                        <input type="text" id="g-y" placeholder="2027" />
+                    </div>
+                </div>
+
+                <div id="mode-custom" style="display:none">
+                    <div class="gen-field">
+                        <label>目標時間</label>
+                        <input type="datetime-local" id="g-end-time" step="1" />
+                    </div>
+                </div>
+
+                <div class="gen-field">
+                    <label>標題文字</label>
+                    <input type="text" id="g-title" placeholder="距離 2027 還有" />
+                </div>
+
+                <div class="gen-field">
+                    <label>結束文字</label>
+                    <input type="text" id="g-end" placeholder="2027 新年快樂！" />
+                </div>
+
+                <div class="gen-field">
+                    <label>Emoji</label>
+                    <input type="text" id="g-emoji" placeholder="🎉" />
+                </div>
+
+                <label class="gen-check">
+                    <input type="checkbox" id="g-hide-copyright" />
+                    隱藏版權文字
+                </label>
+
+                <div class="gen-result" id="g-result" style="display:flex">
+                    <div class="gen-url-box" id="g-url-display"></div>
+                    <div class="gen-actions">
+                        <button onclick="copyUrl()">複製連結</button>
+                        <button onclick="openUrl()">開啟預覽</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="card">
+
+            <div id="countdownView" style="display:flex; flex-direction:column; align-items:center; gap:2rem; width:100%;">
+                <div class="title" id="titleEl"></div>
+
+                <div class="display-wrap" id="displayWrap">
+                    <div class="digit-group" id="daysGroup" style="display:none">
+                        <div class="digit-pair">
+                            <div class="digit-box" id="d0box" style="display:none">
+                                <div class="digit-inner" id="d0">0</div>
+                            </div>
+                            <div class="digit-box">
+                                <div class="digit-inner" id="d1">0</div>
+                            </div>
+                            <div class="digit-box">
+                                <div class="digit-inner" id="d2">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="separator" id="sepD" style="display:none">:</div>
+
+                    <div class="digit-group">
+                        <div class="digit-pair">
+                            <div class="digit-box">
+                                <div class="digit-inner" id="h0">0</div>
+                            </div>
+                            <div class="digit-box">
+                                <div class="digit-inner" id="h1">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="separator">:</div>
+                    <div class="digit-group">
+                        <div class="digit-pair">
+                            <div class="digit-box">
+                                <div class="digit-inner" id="m0">0</div>
+                            </div>
+                            <div class="digit-box">
+                                <div class="digit-inner" id="m1">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="separator">:</div>
+                    <div class="digit-group">
+                        <div class="digit-pair">
+                            <div class="digit-box">
+                                <div class="digit-inner" id="s0">0</div>
+                            </div>
+                            <div class="digit-box">
+                                <div class="digit-inner" id="s1">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="copyright" id="copyright">Nekolive.net 貓咪娛樂技術提供</div>
+            </div>
+
+            <div class="celebrate" id="celebrateView">
+                <div class="celebrate-emoji" id="celebrateEmoji">🎉</div>
+                <div class="celebrate-text" id="celebrateText"></div>
+            </div>
+
+        </div>
+
+        <script src="/static/countdown/main.min.js"></script>
+    </body>
+
+</html>
