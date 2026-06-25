@@ -2,6 +2,7 @@
 (function () {
     let _generatedUrl = '';
     let _mode = 'year';
+    let interval;
 
     function setMode(mode) {
         _mode = mode;
@@ -161,6 +162,6 @@
         showCelebration();
     } else {
         tick();
-        const interval = setInterval(tick, 1000);
+        interval = setInterval(tick, 1000);
     }
 })();
