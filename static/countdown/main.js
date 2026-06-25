@@ -36,7 +36,7 @@
 
     function copyUrl() {
         navigator.clipboard.writeText(_generatedUrl).then(() => {
-            const btn = event.target;
+            const btn = document.getElementById('copy-btn');
             btn.textContent = '已複製！';
             setTimeout(() => btn.textContent = '複製連結', 1500);
         });
