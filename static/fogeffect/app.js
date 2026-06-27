@@ -83,24 +83,39 @@
     }
 
     const noiseTex = makeCloudNoise(512, 5);
+    
+    const fogBase = new PIXI.Graphics();
+    fogBase.beginFill(0xeaf2ff, 1);
+    fogBase.drawRect(0, 0, W, H);
+    fogBase.endFill();
 
-    const fogSprite = new PIXI.TilingSprite(noiseTex, W, H);
-    fogSprite.tint = 0xeaf2ff;
-    fogSprite.tileScale.set(3);
+    const fogNoise = new PIXI.TilingSprite(noiseTex, W, H);
+    fogNoise.tint = 0xeaf2ff;
+    fogNoise.tileScale.set(3);
+
+    const fogContainer = new PIXI.Container();
+    fogContainer.addChild(fogBase);
+    fogContainer.addChild(fogNoise);
 
     const maskSprite = new PIXI.Sprite(fogMask);
     maskSprite.renderable = false;
     app.stage.addChild(maskSprite);
-    fogSprite.mask = maskSprite;
-    app.stage.addChild(fogSprite);
+    fogContainer.mask = maskSprite;
+    app.stage.addChild(fogContainer);
+
+    function applyDensity() {
+        const d = settings.density / 100;
+        fogBase.alpha = d * d * 0.9;
+        fogNoise.alpha = d * 0.85;
+    }
 
     const SPEED_K = 0.012;
     app.ticker.add(d => {
         if (settings.speed <= 0) return;
         const ang = settings.direction * Math.PI / 180;
         const v = settings.speed * SPEED_K;
-        fogSprite.tilePosition.x += Math.cos(ang) * v * d;
-        fogSprite.tilePosition.y += Math.sin(ang) * v * d;
+        fogNoise.tilePosition.x += Math.cos(ang) * v * d;
+        fogNoise.tilePosition.y += Math.sin(ang) * v * d;
     });
 
     const cursorRing = new PIXI.Graphics();
@@ -182,7 +197,7 @@
         recover: 0,
     };
     rebuildBrush();
-    fogSprite.alpha = settings.density / 100;
+    applyDensity();
 
     const canvas = app.view;
     canvas.style.touchAction = 'none';
@@ -309,7 +324,7 @@
     $('density').addEventListener('input', e => {
         settings.density = +e.target.value;
         $('vDensity').textContent = settings.density;
-        fogSprite.alpha = settings.density / 100;
+        applyDensity();
     });
     $('dir').addEventListener('input', e => {
         settings.direction = +e.target.value;
