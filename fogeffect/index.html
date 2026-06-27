@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+        <link rel="stylesheet" href="/static/fogeffect/style.min.css">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.4.0/pixi.min.js"></script>
+    </head>
+
+    <body>
+        <div id="stage"></div>
+
+        <button id="showPanel" title="顯示設定">⚙</button>
+
+        <div id="panel">
+            <div id="panelHeader">
+                <span class="title">霧氣設定</span>
+                <button class="hide-btn" id="hidePanel" title="隱藏設定">−</button>
+            </div>
+            <div id="panelBody">
+                <div class="row">
+                    <label>筆刷範圍 <span class="val"><span id="vSize">120</span> px</span></label>
+                    <input type="range" id="size" min="10" max="600" value="120">
+                </div>
+                <div class="row">
+                    <label>硬度 <span class="val"><span id="vHard">50</span>%</span></label>
+                    <input type="range" id="hard" min="0" max="100" value="50">
+                </div>
+                <div class="row">
+                    <label>霧氣濃度 <span class="val"><span id="vDensity">50</span>%</span></label>
+                    <input type="range" id="density" min="0" max="100" value="50">
+                </div>
+                <div class="row">
+                    <label>自動恢復速度</label>
+                    <div class="segmented" id="recover">
+                        <button type="button" data-value="0" class="active">無</button>
+                        <button type="button" data-value="1">慢</button>
+                        <button type="button" data-value="2">中</button>
+                        <button type="button" data-value="3">快</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="btns">
+                        <button id="reset">重設霧氣</button>
+                        <button id="clear" class="secondary">全部清除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <script src="/static/fogeffect/app.min.js"></script>
+    </body>
+
+</html>
