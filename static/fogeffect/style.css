@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans+TC:wght@100..900&display=swap');
+
 body {
     margin: 0;
     padding: 0;
@@ -5,7 +7,7 @@ body {
     height: 100%;
     overflow: hidden;
     background: #000;
-    font-family: -apple-system, "Microsoft JhengHei", sans-serif;
+    font-family: 'Fira Code', 'Noto Sans TC', -apple-system, "Microsoft JhengHei", sans-serif;
 }
 
 #stage {
@@ -184,8 +186,7 @@ body {
     bottom: 2px;
     width: 12px;
     height: 12px;
-    background:
-        linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.35) 50%);
+    background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.35) 50%);
     pointer-events: none;
 }
 

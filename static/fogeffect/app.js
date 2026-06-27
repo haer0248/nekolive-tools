@@ -30,9 +30,78 @@
         width: W, height: H,
         scaleMode: PIXI.SCALE_MODES.LINEAR,
     });
-    const fogSprite = new PIXI.Sprite(fogMask);
+
+    function makeCloudNoise(size, octaves) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const img = ctx.createImageData(size, size);
+        const data = img.data;
+        const smooth = t => t * t * (3 - 2 * t);
+        const makeGrid = p => {
+            const g = new Float32Array(p * p);
+            for (let i = 0; i < g.length; i++) g[i] = Math.random() * 2 - 1;
+            return g;
+        };
+        const sample = (x, y, g, p) => {
+            const xi = Math.floor(x) % p;
+            const yi = Math.floor(y) % p;
+            const xf = x - Math.floor(x);
+            const yf = y - Math.floor(y);
+            const tx = smooth(xf);
+            const ty = smooth(yf);
+            const x1 = (xi + 1) % p;
+            const y1 = (yi + 1) % p;
+            const a = g[yi * p + xi], b = g[yi * p + x1];
+            const c = g[y1 * p + xi], d = g[y1 * p + x1];
+            const ab = a + (b - a) * tx;
+            const cd = c + (d - c) * tx;
+            return ab + (cd - ab) * ty;
+        };
+        const layers = [];
+        for (let o = 0; o < octaves; o++) {
+            const p = 4 << o;
+            layers.push({ p, g: makeGrid(p) });
+        }
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                let v = 0, amp = 1, total = 0;
+                for (const l of layers) {
+                    v += sample(x / size * l.p, y / size * l.p, l.g, l.p) * amp;
+                    total += amp;
+                    amp *= 0.5;
+                }
+                v = (v / total + 1) / 2;
+                v = Math.pow(v, 1.4);
+                const idx = (y * size + x) * 4;
+                data[idx] = data[idx + 1] = data[idx + 2] = 255;
+                data[idx + 3] = Math.round(v * 255);
+            }
+        }
+        ctx.putImageData(img, 0, 0);
+        return PIXI.Texture.from(canvas);
+    }
+
+    const noiseTex = makeCloudNoise(512, 5);
+
+    const fogSprite = new PIXI.TilingSprite(noiseTex, W, H);
     fogSprite.tint = 0xeaf2ff;
+    fogSprite.tileScale.set(3);
+
+    const maskSprite = new PIXI.Sprite(fogMask);
+    maskSprite.renderable = false;
+    app.stage.addChild(maskSprite);
+    fogSprite.mask = maskSprite;
     app.stage.addChild(fogSprite);
+
+    const SPEED_K = 0.012;
+    app.ticker.add(d => {
+        if (settings.speed <= 0) return;
+        const ang = settings.direction * Math.PI / 180;
+        const v = settings.speed * SPEED_K;
+        fogSprite.tilePosition.x += Math.cos(ang) * v * d;
+        fogSprite.tilePosition.y += Math.sin(ang) * v * d;
+    });
 
     const cursorRing = new PIXI.Graphics();
     cursorRing.visible = false;
@@ -108,6 +177,8 @@
         size: 120,
         hardness: 50,
         density: 50,
+        direction: 22,
+        speed: 25,
         recover: 0,
     };
     rebuildBrush();
@@ -240,7 +311,14 @@
         $('vDensity').textContent = settings.density;
         fogSprite.alpha = settings.density / 100;
     });
-
+    $('dir').addEventListener('input', e => {
+        settings.direction = +e.target.value;
+        $('vDir').textContent = settings.direction;
+    });
+    $('speed').addEventListener('input', e => {
+        settings.speed = +e.target.value;
+        $('vSpeed').textContent = settings.speed;
+    });
     document.querySelectorAll('#recover button').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('#recover button').forEach(b => b.classList.remove('active'));
