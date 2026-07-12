@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.main-box {
+    margin: 0 auto;
+    width: 100%;
+    font-weight: bold;
+    position: fixed;
+    align-items: center;
+    background: transparent;
+    padding: 10px 24px;
+    box-sizing: border-box;
+}
+
+.main-content {
+    display: flex;
+    align-items: center;
+    place-content: center;
+    width: 100%;
+}
+
+.ticker-viewport {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.ticker-track {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    will-change: transform;
+}
+
+.ticker-line {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 0 0 auto;
+}
+
+.ticker-line[data-wrap="true"] {
+    white-space: normal;
+    word-break: break-word;
+}
+
+#content {
+    font-family: 'Noto Sans TC';
+    font-size: 16px;
+    margin-top: 30px;
+    margin-bottom: 60px;
+}

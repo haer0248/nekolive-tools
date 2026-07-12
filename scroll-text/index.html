@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>線上小工具 | OBS 逐行滾動文字</title>
+        <meta name="robots" content="noindex" />
+        <meta charset="utf-8" />
+        <meta name="theme-color" content="#91beff" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+
+        <link rel="shortcut icon" href="https://nekolive.net/assets/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="https://nekolive.net/assets/favicon.ico" />
+        <link rel="stylesheet" href="https://widgets.nekolive.net/assets/bootstrap.min.css" />
+        
+        <link rel="stylesheet" href="/static/scroll-text/style.min.css" />
+        <script src="https://widgets.nekolive.net/assets/outline.js"></script>
+    </head>
+
+    <body>
+        <div class="container" id="content">
+            <div class="row">
+                <div class="col-lg-2"></div>
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                【幫助模式】幫助模式已自動啟用，在 OBS 使用此幫助將會自動隱藏，無需輸入任何設定。
+                            </div>
+
+                            <form id="scrollTextForm">
+                                <div class="mb-3">
+                                    <label for="position" class="form-label">顯示位置</label>
+                                    <select name="position" id="position" class="form-control">
+                                        <option value="bottom">畫面底部</option>
+                                        <option value="top">畫面頂部</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="text" class="form-label">文字（每則一行）</label>
+                                    <button class="btn btn-outline-success btn-sm" type="button" id="add-text">新增</button>
+                                    <p class="form-text">瀏覽器的網址限制長度為 <code>2,048</code>，如果您需要超過此字元數量，請自行透過網址參數 <code>text</code> 調整。</p>
+                                    <div id="text-list">
+                                        <div class="input-group mb-1" data-id="0">
+                                            <input type="text" name="text-pre[]" class="form-control text-input" placeholder="第一則文字" value="歡迎來到直播間！">
+                                            <button class="btn btn-outline-danger del-text" type="button" data-id="0">刪除</button>
+                                        </div>
+                                        <div class="input-group mb-1" data-id="1">
+                                            <input type="text" name="text-pre[]" class="form-control text-input" placeholder="第二則文字" value="記得按下追隨與訂閱">
+                                            <button class="btn btn-outline-danger del-text" type="button" data-id="1">刪除</button>
+                                        </div>
+                                        <div class="input-group mb-1" data-id="2">
+                                            <input type="text" name="text-pre[]" class="form-control text-input" placeholder="第三則文字" value="感謝大家的支持">
+                                            <button class="btn btn-outline-danger del-text" type="button" data-id="2">刪除</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="direction" class="form-label">滾動方向</label>
+                                    <select name="direction" id="direction" class="form-control">
+                                        <option value="up">往上滾動（下一則從下方進入）</option>
+                                        <option value="down">往下滾動（下一則從上方進入）</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="align" class="form-label">文字對齊</label>
+                                    <select name="align" id="align" class="form-control">
+                                        <option value="center">置中</option>
+                                        <option value="left">靠左</option>
+                                        <option value="right">靠右</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="interval" class="form-label">每則停留秒數</label>
+                                    <input type="number" step="0.5" min="1" class="form-control" id="interval" name="interval" value="4" placeholder="4">
+                                    <p class="form-text">每則文字顯示多久後才切換到下一則，預設 4 秒</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="speed" class="form-label">切換過渡秒數</label>
+                                    <input type="number" step="0.1" min="0.1" class="form-control" id="speed" name="speed" value="0.6" placeholder="0.6">
+                                    <p class="form-text">滾動切換的動畫時間，預設 0.6 秒</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="loop" class="form-label">循環播放</label>
+                                    <select name="loop" id="loop" class="form-control">
+                                        <option value="1">是（預設，播完後從第一則重新開始）</option>
+                                        <option value="0">否（播完最後一則後停止）</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="wrap" class="form-label">文字自動換行</label>
+                                    <select name="wrap" id="wrap" class="form-control">
+                                        <option value="false">否（預設，超出範圍將自動省略）</option>
+                                        <option value="true">是（單則文字可換行顯示）</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="font_color" class="form-label">文字顏色</label>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">
+                                            <input type="color" class="form-control form-control-color" id="fontColorPicker" value="#000000">
+                                        </span>
+                                        <input type="text" class="form-control" placeholder="#000000" id="font_color" name="font_color" value="#000000">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="font" class="form-label">字體</label>
+                                    <input type="text" class="form-control" id="font" name="font" value="'Noto Sans TC', sans-serif" placeholder="'Noto Sans TC', sans-serif">
+                                    <p class="form-text">您的電腦中必須要有字體檔案。</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="size" class="form-label">大小</label>
+                                    <input type="text" class="form-control" id="size" name="size" value="200%" placeholder="200%">
+                                    <p class="form-text">預設 200%，請輸入單位 <code>px</code>, <code>em</code> 或使用 <code>%</code></p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="outline_color" class="form-label">外框顏色</label>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">
+                                            <input type="color" class="form-control form-control-color" id="outlineColorPicker" value="#ffffff">
+                                        </span>
+                                        <input type="text" class="form-control" placeholder="#ffffff" id="outline_color" name="outline_color" value="#ffffff">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="size" class="form-label">外框寬度</label>
+                                    <input type="text" class="form-control" id="outline_size" name="outline_size" value="3" placeholder="3">
+                                    <p class="form-text">預設 3，單位 <code>px</code></p>
+                                </div>
+
+                                <button type="button" id="generatePreview" class="btn btn-success">產生預覽</button>
+                                <p class="form-text">點選產生後，點選下方預覽就會自動複製，貼上到 OBS 後就可以使用了。</p>
+
+                                <textarea class="form-control" readonly id="preview" cols="30" rows="3"></textarea>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2"></div>
+            </div>
+        </div>
+
+        <div class="main-box" id="mainBox">
+            <div class="main-content">
+                <div class="ticker-viewport" id="tickerViewport">
+                    <div class="ticker-track" id="tickerTrack"></div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script src="/static/scroll-text/app.min.js"></script>
+    </body>
+
+</html>
