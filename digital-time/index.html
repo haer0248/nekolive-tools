@@ -293,7 +293,7 @@
                 <input type="color" id="p-on" />
             </div>
             <div class="row">
-                <label for="p-off">未亮顏色</label>
+                <label for="p-off">未亮顏色 (不透明度 .1)</label>
                 <input type="color" id="p-off" />
             </div>
             <div class="url-box">
@@ -363,7 +363,7 @@
                 root.setProperty('--on-glow', onColor);
             }
             if (offColor) {
-                root.setProperty('--off', offColor);
+                root.setProperty('--off', hexToRgbA(offColor));
             }
 
             function applyMode() {
@@ -373,6 +373,19 @@
 
             function pad(n) {
                 return n.toString().padStart(2, '0');
+            }
+
+            function hexToRgbA(hex, opacity = '0.1') {
+                var c;
+                if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+                    c = hex.substring(1).split('');
+                    if (c.length == 3) {
+                        c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                    }
+                    c = '0x' + c.join('');
+                    return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ','+opacity+')';
+                }
+                throw new Error('Bad Hex:' + hex);
             }
 
             function renderClock() {
@@ -441,7 +454,7 @@
                 }
 
                 function applyOffColor() {
-                    root.setProperty('--off', inputOff.value);
+                    root.setProperty('--off', hexToRgbA(inputOff.value));
                     updateUrl();
                 }
 
