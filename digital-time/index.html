@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html" charset="uft-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <style>
+            :root {
+                --off: rgba(157, 158, 160, 0.1);
+                --on: rgb(145, 190, 255);
+                --on-glow: rgba(145, 190, 255, 0.65);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                background: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+            }
+
+            .wrap {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 28px;
+            }
+
+            .clock {
+                display: flex;
+                align-items: center;
+            }
+
+            .digit-group {
+                display: flex;
+                overflow: hidden;
+                transition: max-width 0.4s ease, opacity 0.35s ease, margin 0.4s ease, transform 0.35s ease;
+                max-width: 160px;
+            }
+
+            .digit-group.hidden {
+                max-width: 0;
+                opacity: 0;
+                transform: scale(0.85);
+                margin: 0;
+            }
+
+            .digit {
+                position: relative;
+                width: 54px;
+                height: 96px;
+                margin: 0 6px;
+            }
+
+            .segment {
+                position: absolute;
+                background: var(--off);
+                transition: background-color 0.15s ease, box-shadow 0.15s ease;
+            }
+
+            .segment.on {
+                background: var(--on);
+                box-shadow: 0 0 10px 1px var(--on-glow);
+            }
+
+            .seg-h {
+                left: 7px;
+                width: 40px;
+                height: 9px;
+                clip-path: polygon(12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%, 0% 50%);
+            }
+
+            .seg-a {
+                top: 0;
+            }
+
+            .seg-g {
+                top: 43.5px;
+            }
+
+            .seg-d {
+                bottom: 0;
+            }
+
+            .seg-v {
+                width: 9px;
+                height: 39px;
+                clip-path: polygon(0% 12%, 50% 0%, 100% 12%, 100% 88%, 50% 100%, 0% 88%);
+            }
+
+            .seg-f {
+                top: 6px;
+                left: 0;
+            }
+
+            .seg-b {
+                top: 6px;
+                right: 0;
+            }
+
+            .seg-e {
+                bottom: 6px;
+                left: 0;
+            }
+
+            .seg-c {
+                bottom: 6px;
+                right: 0;
+            }
+
+            .colon {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 14px;
+                width: 20px;
+                margin: 0 2px;
+                transition: max-width 0.4s ease, opacity 0.35s ease, margin 0.4s ease;
+            }
+
+            .colon.hidden {
+                max-width: 0;
+                opacity: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+
+            .colon-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: var(--off);
+                margin: 0 auto;
+                transition: background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+            }
+
+            .colon-dot.on {
+                background: var(--on);
+                box-shadow: 0 0 10px 1px var(--on-glow);
+            }
+
+            #color-panel {
+                position: fixed;
+                right: 16px;
+                bottom: 16px;
+                z-index: 999;
+                width: 260px;
+                padding: 16px;
+                border-radius: 12px;
+                background: rgba(20, 20, 24, 0.92);
+                color: #e8e8ec;
+                font-size: 13px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+                display: none;
+            }
+
+            #color-panel.visible {
+                display: block;
+            }
+
+            #color-panel h2 {
+                margin: 0 0 12px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            #color-panel .row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                gap: 10px;
+            }
+
+            #color-panel label {
+                flex: 1;
+            }
+
+            #color-panel input[type="color"] {
+                width: 40px;
+                height: 26px;
+                padding: 0;
+                border: none;
+                border-radius: 6px;
+                background: none;
+                cursor: pointer;
+            }
+
+            #color-panel input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+
+            #color-panel .url-box {
+                margin-top: 10px;
+            }
+
+            #color-panel textarea {
+                width: 100%;
+                height: 56px;
+                resize: none;
+                font-size: 11px;
+                font-family: monospace;
+                background: #0e0e11;
+                color: #b7f7c8;
+                border: 1px solid #333;
+                border-radius: 6px;
+                padding: 6px;
+                box-sizing: border-box;
+            }
+
+            #color-panel button {
+                margin-top: 8px;
+                width: 100%;
+                padding: 7px;
+                border: none;
+                border-radius: 6px;
+                background: #4c8dff;
+                color: #fff;
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            #color-panel button:active {
+                opacity: 0.8;
+            }
+
+            #color-panel .hint {
+                margin-top: 8px;
+                font-size: 11px;
+                color: #999;
+                line-height: 1.4;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="wrap">
+            <div class="clock" id="clock">
+                <div class="digit-group" id="group-hh">
+                    <div class="digit" data-digit></div>
+                    <div class="digit" data-digit></div>
+                </div>
+
+                <div class="colon" id="colon-1">
+                    <div class="colon-dot"></div>
+                    <div class="colon-dot"></div>
+                </div>
+
+                <div class="digit-group" id="group-mm">
+                    <div class="digit" data-digit></div>
+                    <div class="digit" data-digit></div>
+                </div>
+
+                <div class="colon" id="colon-2">
+                    <div class="colon-dot"></div>
+                    <div class="colon-dot"></div>
+                </div>
+
+                <div class="digit-group" id="group-ss">
+                    <div class="digit" data-digit></div>
+                    <div class="digit" data-digit></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="color-panel">
+            <h2>顯示設定</h2>
+            <div class="row">
+                <label for="p-seconds">顯示秒數</label>
+                <input type="checkbox" id="p-seconds" />
+            </div>
+            <div class="row">
+                <label for="p-on">亮燈顏色</label>
+                <input type="color" id="p-on" />
+            </div>
+            <div class="row">
+                <label for="p-off">未亮顏色</label>
+                <input type="color" id="p-off" />
+            </div>
+            <div class="url-box">
+                <textarea id="p-url" readonly></textarea>
+                <button id="p-copy">複製網址</button>
+            </div>
+            <div class="hint">此面板只會在一般瀏覽器顯示，OBS 瀏覽器來源不會出現。複製上方網址貼到 OBS 即可套用設定。</div>
+        </div>
+
+        <script>
+            const SEGMENT_MAP = {
+                '0': 'abcdef',
+                '1': 'bc',
+                '2': 'abged',
+                '3': 'abgcd',
+                '4': 'fgbc',
+                '5': 'afgcd',
+                '6': 'afgedc',
+                '7': 'abc',
+                '8': 'abcdefg',
+                '9': 'abcdfg'
+            };
+            const SEG_NAMES = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+
+            function buildDigit(container) {
+                SEG_NAMES.forEach(name => {
+                    const el = document.createElement('div');
+                    const isHorizontal = (name === 'a' || name === 'd' || name === 'g');
+                    el.className = 'segment ' + (isHorizontal ? 'seg-h' : 'seg-v') + ' seg-' + name;
+                    el.dataset.seg = name;
+                    container.appendChild(el);
+                });
+            }
+
+            function updateDigit(container, charDigit) {
+                const on = new Set((SEGMENT_MAP[charDigit] || '').split(''));
+                container.querySelectorAll('.segment').forEach(seg => {
+                    seg.classList.toggle('on', on.has(seg.dataset.seg));
+                });
+            }
+
+            document.querySelectorAll('.digit').forEach(buildDigit);
+
+            const groups = {
+                hh: [...document.querySelectorAll('#group-hh .digit')],
+                mm: [...document.querySelectorAll('#group-mm .digit')],
+                ss: [...document.querySelectorAll('#group-ss .digit')],
+            };
+
+            const groupSS = document.getElementById('group-ss');
+            const colon2 = document.getElementById('colon-2');
+
+            const params = new URLSearchParams(window.location.search);
+            let showSeconds = ['1', 'true', 'yes'].includes((params.get('seconds') || '').toLowerCase());
+
+            function normalizeColor(value) {
+                if (!value) return null;
+                const v = decodeURIComponent(value);
+                return v.startsWith('#') || /^[a-z]+$/i.test(v) ? v : '#' + v;
+            }
+
+            const root = document.documentElement.style;
+            const onColor = normalizeColor(params.get('color'));
+            const offColor = normalizeColor(params.get('off-color'));
+            if (onColor) {
+                root.setProperty('--on', onColor);
+                root.setProperty('--on-glow', onColor);
+            }
+            if (offColor) {
+                root.setProperty('--off', offColor);
+            }
+
+            function applyMode() {
+                groupSS.classList.toggle('hidden', !showSeconds);
+                colon2.classList.toggle('hidden', !showSeconds);
+            }
+
+            function pad(n) {
+                return n.toString().padStart(2, '0');
+            }
+
+            function renderClock() {
+                const now = new Date();
+                const hh = pad(now.getHours());
+                const mm = pad(now.getMinutes());
+                const ss = pad(now.getSeconds());
+
+                updateDigit(groups.hh[0], hh[0]);
+                updateDigit(groups.hh[1], hh[1]);
+                updateDigit(groups.mm[0], mm[0]);
+                updateDigit(groups.mm[1], mm[1]);
+                updateDigit(groups.ss[0], ss[0]);
+                updateDigit(groups.ss[1], ss[1]);
+            }
+
+            function renderColons() {
+                const blinkOn = Math.floor(Date.now() / 500) % 2 === 0;
+                document.querySelectorAll('.colon-dot').forEach(dot => {
+                    dot.classList.toggle('on', blinkOn);
+                });
+            }
+
+            applyMode();
+            renderClock();
+            renderColons();
+            setInterval(renderClock, 1000);
+            setInterval(renderColons, 500);
+
+            // --- 顏色設定面板 (僅在非 OBS 瀏覽器來源時顯示) ---
+            function rgbStringToHex(str) {
+                const m = str.match(/\d+(\.\d+)?/g);
+                if (!m) return '#000000';
+                const [r, g, b] = m;
+                return '#' + [r, g, b].map(n => Math.round(n).toString(16).padStart(2, '0')).join('');
+            }
+
+            const isObs = typeof window.obsstudio !== 'undefined';
+
+            if (!isObs) {
+                const panel = document.getElementById('color-panel');
+                const inputSeconds = document.getElementById('p-seconds');
+                const inputOn = document.getElementById('p-on');
+                const inputOff = document.getElementById('p-off');
+                const urlBox = document.getElementById('p-url');
+                const copyBtn = document.getElementById('p-copy');
+
+                const computed = getComputedStyle(document.documentElement);
+                inputOn.value = onColor && onColor.startsWith('#') ? onColor : rgbStringToHex(computed.getPropertyValue('--on'));
+                inputOff.value = offColor && offColor.startsWith('#') ? offColor : rgbStringToHex(computed.getPropertyValue('--off'));
+                inputSeconds.checked = showSeconds;
+
+                function updateUrl() {
+                    const u = new URL(window.location.href);
+                    u.search = '';
+                    if (inputSeconds.checked) u.searchParams.set('seconds', '1');
+                    u.searchParams.set('color', inputOn.value.replace('#', ''));
+                    u.searchParams.set('off-color', inputOff.value.replace('#', ''));
+                    urlBox.value = u.toString();
+                }
+
+                function applyOnColor() {
+                    root.setProperty('--on', inputOn.value);
+                    root.setProperty('--on-glow', inputOn.value);
+                    updateUrl();
+                }
+
+                function applyOffColor() {
+                    root.setProperty('--off', inputOff.value);
+                    updateUrl();
+                }
+
+                inputOn.addEventListener('input', applyOnColor);
+                inputOff.addEventListener('input', applyOffColor);
+                inputSeconds.addEventListener('change', () => {
+                    showSeconds = inputSeconds.checked;
+                    applyMode();
+                    updateUrl();
+                });
+
+                copyBtn.addEventListener('click', () => {
+                    urlBox.select();
+                    navigator.clipboard.writeText(urlBox.value).then(() => {
+                        copyBtn.textContent = '已複製！';
+                        setTimeout(() => (copyBtn.textContent = '複製網址'), 1200);
+                    }).catch(() => {
+                        document.execCommand('copy');
+                    });
+                });
+
+                updateUrl();
+                panel.classList.add('visible');
+            }
+        </script>
+
+    </body>
+
+</html>
