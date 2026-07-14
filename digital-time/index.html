@@ -160,7 +160,7 @@
                 right: 16px;
                 bottom: 16px;
                 z-index: 999;
-                width: 260px;
+                width: 300px;
                 padding: 16px;
                 border-radius: 12px;
                 background: rgba(20, 20, 24, 0.92);
@@ -206,6 +206,18 @@
                 width: 16px;
                 height: 16px;
                 cursor: pointer;
+            }
+
+            #color-panel input[type="range"] {
+                width: 110px;
+                cursor: pointer;
+            }
+
+            #color-panel .value-tag {
+                width: 32px;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+                color: #aaa;
             }
 
             #color-panel .url-box {
@@ -293,8 +305,13 @@
                 <input type="color" id="p-on" />
             </div>
             <div class="row">
-                <label for="p-off">未亮顏色 (不透明度 .1)</label>
+                <label for="p-off">未亮顏色</label>
                 <input type="color" id="p-off" />
+            </div>
+            <div class="row">
+                <label for="p-off-opacity">未亮不透明度</label>
+                <input type="range" id="p-off-opacity" min="0" max="1" step="0.01" value="0.1" />
+                <span class="value-tag" id="p-off-opacity-val">0.1</span>
             </div>
             <div class="url-box">
                 <textarea id="p-url" readonly></textarea>
@@ -358,12 +375,14 @@
             const root = document.documentElement.style;
             const onColor = normalizeColor(params.get('color'));
             const offColor = normalizeColor(params.get('off-color'));
+            const offOpacityParam = parseFloat(params.get('off-opacity'));
+            let offOpacity = Number.isFinite(offOpacityParam) ? Math.min(1, Math.max(0, offOpacityParam)) : 0.1;
             if (onColor) {
                 root.setProperty('--on', onColor);
                 root.setProperty('--on-glow', onColor);
             }
             if (offColor) {
-                root.setProperty('--off', hexToRgbA(offColor));
+                root.setProperty('--off', hexToRgbA(offColor, offOpacity));
             }
 
             function applyMode() {
@@ -430,6 +449,8 @@
                 const inputSeconds = document.getElementById('p-seconds');
                 const inputOn = document.getElementById('p-on');
                 const inputOff = document.getElementById('p-off');
+                const inputOffOpacity = document.getElementById('p-off-opacity');
+                const offOpacityVal = document.getElementById('p-off-opacity-val');
                 const urlBox = document.getElementById('p-url');
                 const copyBtn = document.getElementById('p-copy');
 
@@ -437,6 +458,8 @@
                 inputOn.value = onColor && onColor.startsWith('#') ? onColor : rgbStringToHex(computed.getPropertyValue('--on'));
                 inputOff.value = offColor && offColor.startsWith('#') ? offColor : rgbStringToHex(computed.getPropertyValue('--off'));
                 inputSeconds.checked = showSeconds;
+                inputOffOpacity.value = offOpacity;
+                offOpacityVal.textContent = offOpacity;
 
                 function updateUrl() {
                     const u = new URL(window.location.href);
@@ -444,6 +467,7 @@
                     if (inputSeconds.checked) u.searchParams.set('seconds', '1');
                     u.searchParams.set('color', inputOn.value.replace('#', ''));
                     u.searchParams.set('off-color', inputOff.value.replace('#', ''));
+                    u.searchParams.set('off-opacity', inputOffOpacity.value);
                     urlBox.value = u.toString();
                 }
 
@@ -454,12 +478,16 @@
                 }
 
                 function applyOffColor() {
-                    root.setProperty('--off', hexToRgbA(inputOff.value));
+                    root.setProperty('--off', hexToRgbA(inputOff.value, inputOffOpacity.value));
                     updateUrl();
                 }
 
                 inputOn.addEventListener('input', applyOnColor);
                 inputOff.addEventListener('input', applyOffColor);
+                inputOffOpacity.addEventListener('input', () => {
+                    offOpacityVal.textContent = inputOffOpacity.value;
+                    applyOffColor();
+                });
                 inputSeconds.addEventListener('change', () => {
                     showSeconds = inputSeconds.checked;
                     applyMode();
