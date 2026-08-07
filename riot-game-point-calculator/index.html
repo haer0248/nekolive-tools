@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+    <head>
+        <title>遊戲幣轉換小工具 ◃ 網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <meta charset="utf-8" />
+        <meta name="theme-color" content="#91beff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+        
+        <style>
+            @import url(https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Noto+Sans+TC:wght@100..900&display=swap);
+
+            :root {
+                --bg: #0a1428;
+                --panel: #0f1c34;
+                --border: #1e3555;
+                --gold: #c8aa6e;
+                --gold-bright: #f0e6d2;
+                --blue: #0ac8b9;
+                --text: #a09b8c;
+                --text-bright: #f0e6d2;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html {
+                min-height: 100%;
+                background: var(--bg);
+            }
+
+            body {
+                margin: 0;
+                padding: 24px;
+                min-height: 100vh;
+                font-family: 'Fira Code', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "PingFang TC", "Microsoft JhengHei", Roboto, Helvetica, Arial, sans-serif;
+                color: var(--text-bright);
+                position: relative;
+            }
+
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(circle at top, #0f2140 0%, var(--bg) 70%);
+                z-index: -1;
+            }
+
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            input[type="number"] {
+                -moz-appearance: textfield;
+            }
+
+            .container {
+                max-width: 880px;
+                margin: 0 auto;
+            }
+
+            a,
+            a:visited {
+                color: #a09b8c;
+                text-decoration: none;
+                transition: color .3s;
+            }
+
+            a:hover {
+                color: #f0e6d2;
+            }
+
+            .layout {
+                display: flex;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .col-main {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+
+            .col-side {
+                flex: 0 0 260px;
+            }
+
+            @media (max-width:720px) {
+                .col-main {
+                    min-width: 100%;
+                }
+
+                .layout {
+                    flex-direction: column;
+                }
+
+                .col-side {
+                    flex: 1 1 auto;
+                    width: 100%;
+                }
+            }
+
+            h1 {
+                font-size: 20px;
+                text-align: center;
+                color: var(--gold);
+                letter-spacing: 1px;
+                margin-bottom: 20px;
+                font-weight: 600;
+            }
+
+            .tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .tab-btn {
+                flex: 1;
+                padding: 12px;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--text);
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                letter-spacing: 1px;
+                font-family: inherit;
+                transition: all 0.15s;
+            }
+
+            .tab-btn:hover {
+                color: var(--text-bright);
+                border-color: var(--gold);
+            }
+
+            .tab-btn.active {
+                background: linear-gradient(180deg, #c8aa6e, #a17f3f);
+                border-color: transparent;
+                color: #0a1428;
+            }
+
+            .tab-panel {
+                display: none;
+            }
+
+            .tab-panel.active {
+                display: block;
+            }
+
+            .card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            label {
+                display: block;
+                font-size: 13px;
+                color: var(--text);
+                margin-bottom: 6px;
+            }
+
+            .row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .row:last-child {
+                margin-bottom: 0;
+            }
+
+            .fields {
+                display: flex;
+                gap: 16px;
+            }
+
+            .field {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .field label {
+                margin-bottom: 8px;
+            }
+
+            @media (max-width:520px) {
+                .fields {
+                    flex-direction: column;
+                    gap: 14px;
+                }
+            }
+
+            input[type="number"] {
+                width: 100%;
+                padding: 10px 12px;
+                background: #08101f;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                color: var(--gold-bright);
+                font-size: 16px;
+                outline: none;
+                font-family: inherit;
+            }
+
+            input[type="number"]:focus {
+                border-color: var(--blue);
+            }
+
+            .checkbox-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: var(--text);
+            }
+
+            .checkbox-row input {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--blue);
+            }
+
+            .balance-input {
+                flex: 1;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+                background: linear-gradient(180deg, #c8aa6e, #a17f3f);
+                border: none;
+                border-radius: 6px;
+                color: #0a1428;
+                font-weight: 700;
+                font-size: 15px;
+                cursor: pointer;
+                letter-spacing: 1px;
+                transition: filter 0.15s;
+            }
+
+            button:hover {
+                filter: brightness(1.1);
+            }
+
+            button:active {
+                filter: brightness(0.95);
+            }
+
+            .summary {
+                text-align: center;
+                font-size: 14px;
+                color: var(--text);
+                margin-bottom: 12px;
+                line-height: 1.6;
+            }
+
+            .summary b {
+                color: var(--blue);
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px 10px;
+                text-align: right;
+            }
+
+            th {
+                color: var(--gold);
+                font-weight: 600;
+                border-bottom: 2px solid var(--border);
+                font-size: 12px;
+            }
+
+            td:first-child,
+            th:first-child {
+                text-align: left;
+            }
+
+            tbody tr td {
+                border-bottom: 1px solid var(--border);
+                color: var(--text-bright);
+            }
+
+            tfoot td {
+                border-top: 2px solid var(--gold);
+                font-weight: 700;
+                color: var(--gold-bright);
+                padding-top: 10px;
+            }
+
+            .result-final {
+                text-align: center;
+                margin-top: 16px;
+                padding-top: 14px;
+                border-top: 1px dashed var(--border);
+                font-size: 15px;
+                color: var(--gold-bright);
+            }
+
+            .result-final b {
+                color: var(--blue);
+                font-size: 17px;
+            }
+
+            .empty,
+            .error {
+                text-align: center;
+                color: var(--text);
+                font-size: 13px;
+                padding: 12px 0;
+            }
+
+            .error {
+                color: #e05555;
+            }
+
+            .qty-badge {
+                display: inline-block;
+                font-size: 11px;
+                color: var(--blue);
+                margin-left: 4px;
+            }
+
+            .side-title {
+                font-size: 13px;
+                color: var(--gold);
+                font-weight: 600;
+                margin-bottom: 12px;
+                letter-spacing: 0.5px;
+            }
+
+            .bought-col {
+                width: 36px;
+                text-align: center !important;
+            }
+
+            .bought-col input {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--blue);
+                cursor: pointer;
+            }
+
+            tr.bought td {
+                color: var(--text);
+                text-decoration: line-through;
+                opacity: 0.5;
+            }
+
+            .remaining-final {
+                text-align: center;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px dashed var(--border);
+                font-size: 14px;
+                color: var(--text);
+            }
+
+            .remaining-final b {
+                color: var(--gold);
+            }
+
+            .hint {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                background: rgba(240, 166, 65, 0.08);
+                border: 1px solid rgba(240, 166, 65, 0.35);
+                border-radius: 6px;
+                padding: 10px 12px;
+                font-size: 13px;
+                color: #f0a641;
+                margin-bottom: 14px;
+                line-height: 1.6;
+            }
+
+            .hint b {
+                color: #f5c07a;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <h1>遊戲幣購買方案計算機</h1>
+
+            <div class="tabs">
+                <button type="button" class="tab-btn active" data-tab="lol">英雄聯盟｜聯盟幣</button>
+                <button type="button" class="tab-btn" data-tab="valorant">特戰英豪｜特務幣</button>
+            </div>
+
+            <!-- ===== LoL panel ===== -->
+            <div class="tab-panel active" data-panel="lol">
+                <div class="layout">
+                    <div class="col-main">
+                        <div class="card">
+                            <div class="fields">
+                                <div class="field">
+                                    <div class="checkbox-row" style="margin-bottom:5px;">
+                                        <input type="checkbox" id="useBalance-lol">
+                                        <label for="useBalance-lol" style="margin:0;">目前帳號餘額（聯盟幣）</label>
+                                    </div>
+                                    <input type="number" id="balance-lol" class="balance-input" placeholder="例如 322" min="0" value="0">
+                                </div>
+                                <div class="field">
+                                    <label for="target-lol">想要達到的聯盟幣總數</label>
+                                    <input type="number" id="target-lol" placeholder="例如 20100" min="1">
+                                </div>
+                            </div>
+                            <div class="checkbox-row" style="margin-top:14px;">
+                                <input type="checkbox" id="minCount-lol">
+                                <label for="minCount-lol" style="margin:0;">以最少購買次數達到目標點數</label>
+                            </div>
+                        </div>
+
+                        <div class="card" id="resultCard-lol">
+                            <div class="empty">輸入目標聯盟幣數量後按下計算</div>
+                        </div>
+                    </div>
+
+                    <div class="col-side">
+                        <div class="card">
+                            <div class="side-title">遊戲幣別轉換</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>NT$</th>
+                                        <th>聯盟幣</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="priceTable-lol"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== Valorant panel ===== -->
+            <div class="tab-panel" data-panel="valorant">
+                <div class="layout">
+                    <div class="col-main">
+                        <div class="card">
+                            <div class="fields">
+                                <div class="field">
+                                    <div class="checkbox-row" style="margin-bottom:5px;">
+                                        <input type="checkbox" id="useBalance-valorant">
+                                        <label for="useBalance-valorant" style="margin:0;">目前帳號餘額（特務幣）</label>
+                                    </div>
+                                    <input type="number" id="balance-valorant" class="balance-input" placeholder="例如 322" min="0" value="0">
+                                </div>
+                                <div class="field">
+                                    <label for="target-valorant">想要達到的特務幣總數</label>
+                                    <input type="number" id="target-valorant" placeholder="例如 20000" min="1">
+                                </div>
+                            </div>
+                            <div class="checkbox-row" style="margin-top:14px;">
+                                <input type="checkbox" id="minCount-valorant">
+                                <label for="minCount-valorant" style="margin:0;">以最少購買次數達到目標點數</label>
+                            </div>
+                        </div>
+
+                        <div class="card" id="resultCard-valorant">
+                            <div class="empty">輸入目標特務幣數量後按下計算</div>
+                        </div>
+                    </div>
+
+                    <div class="col-side">
+                        <div class="card">
+                            <div class="side-title">遊戲幣別轉換</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>NT$</th>
+                                        <th>特務幣</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="priceTable-valorant"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                用 Claude 生的計算小工具，想要就偷走吧。<br>
+                儲值了餘額沒更新重開客戶端解決。</p>
+        </div>
+
+        <script>
+            (function () {
+                const GAMES = {
+                    lol: {
+                        unit: '聯盟幣',
+                        denoms: [{
+                            nt: 90,
+                            coins: 380
+                        }, {
+                            nt: 150,
+                            coins: 660
+                        }, {
+                            nt: 300,
+                            coins: 1380
+                        }, {
+                            nt: 750,
+                            coins: 3500
+                        }, {
+                            nt: 1490,
+                            coins: 7050
+                        }, {
+                            nt: 2500,
+                            coins: 12150
+                        }, {
+                            nt: 6800,
+                            coins: 33500
+                        }, {
+                            nt: 12050,
+                            coins: 60200
+                        }]
+                    },
+                    valorant: {
+                        unit: '特務幣',
+                        denoms: [{
+                            nt: 150,
+                            coins: 460
+                        }, {
+                            nt: 300,
+                            coins: 930
+                        }, {
+                            nt: 500,
+                            coins: 1600
+                        }, {
+                            nt: 1000,
+                            coins: 3300
+                        }, {
+                            nt: 1490,
+                            coins: 5050
+                        }, {
+                            nt: 3000,
+                            coins: 10600
+                        }]
+                    }
+                };
+
+                function fmt(n) {
+                    return n.toLocaleString('en-US');
+                }
+
+                function solve(DENOMS, need) {
+                    if (need <= 0) return {
+                        cost: 0,
+                        totalCoins: 0,
+                        counts: DENOMS.map(() => 0)
+                    };
+
+                    const maxDenomCoins = Math.max(...DENOMS.map(d => d.coins));
+                    const upper = need + maxDenomCoins - 1;
+                    const dp = new Float64Array(upper + 1).fill(Infinity);
+                    const choice = new Int32Array(upper + 1).fill(-1);
+                    dp[0] = 0;
+
+                    for (let i = 1; i <= upper; i++) {
+                        for (let j = 0; j < DENOMS.length; j++) {
+                            const d = DENOMS[j];
+                            if (d.coins <= i && dp[i - d.coins] + d.nt < dp[i]) {
+                                dp[i] = dp[i - d.coins] + d.nt;
+                                choice[i] = j;
+                            }
+                        }
+                    }
+
+                    let best = Infinity,
+                        bestI = -1;
+                    for (let i = need; i <= upper; i++) {
+                        if (dp[i] < best) {
+                            best = dp[i];
+                            bestI = i;
+                        }
+                    }
+
+                    if (bestI === -1) return null;
+
+                    const counts = DENOMS.map(() => 0);
+                    let cur = bestI;
+                    while (cur > 0) {
+                        const j = choice[cur];
+                        counts[j]++;
+                        cur -= DENOMS[j].coins;
+                    }
+
+                    return {
+                        cost: best,
+                        totalCoins: bestI,
+                        counts
+                    };
+                }
+
+                // Minimizes number of purchases first, then cost as a tiebreaker.
+                function solveMinCount(DENOMS, need) {
+                    if (need <= 0) return {
+                        cost: 0,
+                        totalCoins: 0,
+                        counts: DENOMS.map(() => 0)
+                    };
+
+                    const maxDenomCoins = Math.max(...DENOMS.map(d => d.coins));
+                    const upper = need + maxDenomCoins - 1;
+                    const dpCount = new Float64Array(upper + 1).fill(Infinity);
+                    const dpCost = new Float64Array(upper + 1).fill(Infinity);
+                    const choice = new Int32Array(upper + 1).fill(-1);
+                    dpCount[0] = 0;
+                    dpCost[0] = 0;
+
+                    for (let i = 1; i <= upper; i++) {
+                        for (let j = 0; j < DENOMS.length; j++) {
+                            const d = DENOMS[j];
+                            if (d.coins <= i) {
+                                const candCount = dpCount[i - d.coins] + 1;
+                                const candCost = dpCost[i - d.coins] + d.nt;
+                                if (candCount < dpCount[i] || (candCount === dpCount[i] && candCost < dpCost[i])) {
+                                    dpCount[i] = candCount;
+                                    dpCost[i] = candCost;
+                                    choice[i] = j;
+                                }
+                            }
+                        }
+                    }
+
+                    let bestCount = Infinity,
+                        bestCost = Infinity,
+                        bestI = -1;
+                    for (let i = need; i <= upper; i++) {
+                        if (dpCount[i] < bestCount || (dpCount[i] === bestCount && dpCost[i] < bestCost)) {
+                            bestCount = dpCount[i];
+                            bestCost = dpCost[i];
+                            bestI = i;
+                        }
+                    }
+
+                    if (bestI === -1) return null;
+
+                    const counts = DENOMS.map(() => 0);
+                    let cur = bestI;
+                    while (cur > 0) {
+                        const j = choice[cur];
+                        counts[j]++;
+                        cur -= DENOMS[j].coins;
+                    }
+
+                    return {
+                        cost: bestCost,
+                        totalCoins: bestI,
+                        counts
+                    };
+                }
+
+                function setupCalculator(key, config) {
+                    const DENOMS = config.denoms;
+                    const UNIT = config.unit;
+
+                    const priceTableEl = document.getElementById(`priceTable-${key}`);
+                    [...DENOMS].sort((a, b) => b.nt - a.nt).forEach(d => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${fmt(d.nt)}</td><td>${fmt(d.coins)}</td>`;
+                        priceTableEl.appendChild(tr);
+                    });
+
+                    const targetEl = document.getElementById(`target-${key}`);
+                    const balanceEl = document.getElementById(`balance-${key}`);
+                    const useBalanceEl = document.getElementById(`useBalance-${key}`);
+                    const minCountEl = document.getElementById(`minCount-${key}`);
+                    const resultCard = document.getElementById(`resultCard-${key}`);
+
+                    function render() {
+                        const targetVal = parseInt(targetEl.value, 10);
+
+                        if (!targetVal || targetVal <= 0) {
+                            resultCard.innerHTML = `<div class="error">請輸入有效的${UNIT}目標數量</div>`;
+                            return;
+                        }
+
+                        const useBalance = useBalanceEl.checked;
+                        const balanceVal = useBalance ? (parseInt(balanceEl.value, 10) || 0) : 0;
+                        const need = Math.max(targetVal - balanceVal, 0);
+
+                        let html = '';
+                        if (useBalance) {
+                            html += `<div class="summary">餘 <b>${fmt(balanceVal)}</b> 需購買 <b>${fmt(need)}</b> ${UNIT}</div>`;
+                        }
+
+                        if (need === 0) {
+                            html += '<div class="empty">餘額已足夠，不需要購買</div>';
+                            resultCard.innerHTML = html;
+                            return;
+                        }
+
+                        const minCount = minCountEl.checked;
+                        const result = minCount ? solveMinCount(DENOMS, need) : solve(DENOMS, need);
+                        if (!result) {
+                            resultCard.innerHTML = html + '<div class="error">無法計算購買方案</div>';
+                            return;
+                        }
+
+                        const overshoot = result.totalCoins - need;
+                        if (minCount && overshoot > 0) {
+                            html += `<div class="hint"><div>⚠ 已選擇最少購買次數，會多得 <b>${fmt(overshoot)}</b> ${UNIT}（實際取得 ${fmt(result.totalCoins)}，超出目標 ${fmt(need)} 約 ${(overshoot / need * 100).toFixed(1)}%）</div></div>`;
+                        }
+
+                        const rows = DENOMS
+                            .map((d, idx) => ({
+                                ...d,
+                                qty: result.counts[idx]
+                            }))
+                            .filter(r => r.qty > 0)
+                            .sort((a, b) => b.nt - a.nt);
+
+                        // expand into one row per individual purchase, so each can be checked off separately
+                        const flatRows = [];
+                        rows.forEach(r => {
+                            for (let k = 0; k < r.qty; k++) {
+                                flatRows.push({
+                                    coins: r.coins,
+                                    nt: r.nt
+                                });
+                            }
+                        });
+
+                        const purchaseCount = flatRows.length;
+
+                        html += `
+                        <table id="planTable-${key}">
+                            <thead><tr><th class="bought-col">已買</th><th>${UNIT}</th><th>NT$</th></tr></thead>
+                            <tbody>
+                                ${flatRows.map((r, i) => `
+                                <tr data-coins="${r.coins}" data-nt="${r.nt}">
+                                    <td class="bought-col"><input type="checkbox" class="bought-check" data-idx="${i}"></td>
+                                    <td>${fmt(r.coins)}</td>
+                                    <td>${fmt(r.nt)}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr><td></td><td id="tfootCoins-${key}">${fmt(result.totalCoins)}</td><td id="tfootNt-${key}">${fmt(result.cost)}</td></tr>
+                            </tfoot>
+                        </table>
+                        <div class="result-final" id="resultFinal-${key}">
+                            需分別購買 <b>${purchaseCount}</b> 次，花費 <b>NT$ ${fmt(result.cost)}</b>，取得 <b>${fmt(result.totalCoins)}</b> ${UNIT}
+                        </div>
+                    `;
+
+                        resultCard.innerHTML = html;
+
+                        const table = document.getElementById(`planTable-${key}`);
+                        const tfootCoins = document.getElementById(`tfootCoins-${key}`);
+                        const tfootNt = document.getElementById(`tfootNt-${key}`);
+                        const resultFinal = document.getElementById(`resultFinal-${key}`);
+
+                        function updateRemaining() {
+                            const trs = [...table.querySelectorAll('tbody tr')];
+                            let remCoins = 0,
+                                remNt = 0,
+                                remCount = 0,
+                                boughtCount = 0;
+
+                            trs.forEach(tr => {
+                                const bought = tr.querySelector('.bought-check').checked;
+                                const coins = parseInt(tr.dataset.coins, 10);
+                                const nt = parseInt(tr.dataset.nt, 10);
+                                tr.classList.toggle('bought', bought);
+                                if (bought) {
+                                    boughtCount++;
+                                } else {
+                                    remCoins += coins;
+                                    remNt += nt;
+                                    remCount++;
+                                }
+                            });
+
+                            tfootCoins.textContent = fmt(remCoins);
+                            tfootNt.textContent = fmt(remNt);
+
+                            if (boughtCount === 0) {
+                                resultFinal.innerHTML = `需分別購買 <b>${remCount}</b> 次，花費 <b>NT$ ${fmt(remNt)}</b>，取得 <b>${fmt(remCoins)}</b> ${UNIT}`;
+                                return;
+                            }
+
+                            if (remCount === 0) {
+                                resultFinal.innerHTML = '全部已購買完成';
+                                return;
+                            }
+
+                            resultFinal.innerHTML = `已購買 <b>${boughtCount}</b> 次，尚需購買 <b>${remCount}</b> 次，花費 <b>NT$ ${fmt(remNt)}</b>，取得 <b>${fmt(remCoins)}</b> ${UNIT}`;
+                        }
+
+                        table.querySelectorAll('.bought-check').forEach(cb => {
+                            cb.addEventListener('change', updateRemaining);
+                        });
+                    }
+
+                    targetEl.addEventListener('input', render);
+                    balanceEl.addEventListener('input', render);
+                    useBalanceEl.addEventListener('change', render);
+                    minCountEl.addEventListener('change', render);
+                    render();
+                }
+
+                Object.keys(GAMES).forEach(key => setupCalculator(key, GAMES[key]));
+
+                // tab switching
+                const tabBtns = document.querySelectorAll('.tab-btn');
+                const panels = document.querySelectorAll('.tab-panel');
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const target = btn.dataset.tab;
+                        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+                        panels.forEach(p => p.classList.toggle('active', p.dataset.panel === target));
+                    });
+                });
+            })()
+        </script>
+    </body>
+
+</html>
