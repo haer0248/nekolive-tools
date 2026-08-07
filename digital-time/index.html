@@ -13,6 +13,8 @@
         <link rel="icon" href="https://haer0248.me/favicon.ico" />
         <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
 
+        <link rel="stylesheet" href="https://widgets.nekolive.net/assets/bootstrap.min.css" />
+
         <style>
             :root {
                 --off: rgba(157, 158, 160, 0.1);
@@ -161,6 +163,8 @@
                 bottom: 16px;
                 z-index: 999;
                 width: 300px;
+                max-height: calc(100vh - 32px);
+                overflow-y: auto;
                 padding: 16px;
                 border-radius: 12px;
                 background: rgba(20, 20, 24, 0.92);
@@ -236,6 +240,19 @@
                 border-radius: 6px;
                 padding: 6px;
                 box-sizing: border-box;
+            }
+
+            #color-panel .url-box input[type="text"],
+            #color-panel .url-box input[type="password"] {
+                width: 100%;
+                font-size: 11px;
+                font-family: monospace;
+                background: #0e0e11;
+                border: 1px solid #333;
+                border-radius: 6px;
+                padding: 6px;
+                box-sizing: border-box;
+                margin-bottom: 4px;
             }
 
             #color-panel button {
@@ -314,11 +331,25 @@
                 <span class="value-tag" id="p-off-opacity-val">0.1</span>
             </div>
             <div class="url-box">
-                <textarea id="p-url" readonly></textarea>
-                <button id="p-copy">複製網址</button>
+                <label style="display:block; margin-bottom:4px;">OBS 瀏覽器來源網址（只需要貼一次）</label>
+                <input type="text" id="p-obs-url" readonly style="color:#9dd8ff; width:100%; box-sizing:border-box;">
+                <button id="p-obs-toggle">顯示</button>
+                <button id="p-obs-copy">複製</button>
             </div>
-            <div class="hint">此面板只會在一般瀏覽器顯示，OBS 瀏覽器來源不會出現。複製上方網址貼到 OBS 即可套用設定。</div>
+            <details style="margin-top:10px;">
+                <summary style="cursor:pointer;">進階：沒有設定雲端同步？改用傳統網址參數</summary>
+                <div class="url-box">
+                    <textarea id="p-url" readonly></textarea>
+                    <button id="p-copy">複製網址</button>
+                </div>
+            </details>
+            <div class="hint">此面板只會在一般瀏覽器顯示，OBS 瀏覽器來源不會出現。已設定雲端同步的話，這裡改設定 OBS 端會即時套用，不用重貼網址。</div>
+            <div id="syncPanelMount"></div>
         </div>
+
+        <script src="/static/shared/sync-server-config.js"></script>
+        <script src="/static/shared/sync-store.js"></script>
+        <script src="/static/shared/sync-panel.js"></script>
 
         <script>
             const SEGMENT_MAP = {
@@ -362,9 +393,7 @@
 
             const groupSS = document.getElementById('group-ss');
             const colon2 = document.getElementById('colon-2');
-
-            const params = new URLSearchParams(window.location.search);
-            let showSeconds = ['1', 'true', 'yes'].includes((params.get('seconds') || '').toLowerCase());
+            const root = document.documentElement.style;
 
             function normalizeColor(value) {
                 if (!value) return null;
@@ -372,22 +401,41 @@
                 return v.startsWith('#') || /^[a-z]+$/i.test(v) ? v : '#' + v;
             }
 
-            const root = document.documentElement.style;
-            const onColor = normalizeColor(params.get('color'));
-            const offColor = normalizeColor(params.get('off-color'));
-            const offOpacityParam = parseFloat(params.get('off-opacity'));
-            let offOpacity = Number.isFinite(offOpacityParam) ? Math.min(1, Math.max(0, offOpacityParam)) : 0.1;
-            if (onColor) {
-                root.setProperty('--on', onColor);
-                root.setProperty('--on-glow', onColor);
+            const DEFAULTS = { seconds: 'false', color: '91beff', offColor: '9d9ea0', offOpacity: '0.1' };
+
+            function getLegacyUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                const out = {};
+                let has = false;
+                if (params.has('seconds')) { out.seconds = ['1', 'true', 'yes'].includes((params.get('seconds') || '').toLowerCase()) ? 'true' : 'false'; has = true; }
+                if (params.has('color')) { out.color = params.get('color'); has = true; }
+                if (params.has('off-color')) { out.offColor = params.get('off-color'); has = true; }
+                if (params.has('off-opacity')) { out.offOpacity = params.get('off-opacity'); has = true; }
+                return has ? out : null;
             }
-            if (offColor) {
-                root.setProperty('--off', hexToRgbA(offColor, offOpacity));
+
+            function isOBSMode() {
+                return typeof window.obsstudio !== 'undefined' || navigator.userAgent.includes('OBS') || new URLSearchParams(window.location.search).get('obs') === '1';
             }
+
+            let showSeconds = false;
 
             function applyMode() {
                 groupSS.classList.toggle('hidden', !showSeconds);
                 colon2.classList.toggle('hidden', !showSeconds);
+            }
+
+            function applyConfig(cfg) {
+                showSeconds = String(cfg.seconds) === 'true';
+                const onColor = normalizeColor(cfg.color) || '#' + DEFAULTS.color;
+                const offColor = normalizeColor(cfg.offColor) || '#' + DEFAULTS.offColor;
+                const offOpacityParam = parseFloat(cfg.offOpacity);
+                const offOpacity = Number.isFinite(offOpacityParam) ? Math.min(1, Math.max(0, offOpacityParam)) : 0.1;
+
+                root.setProperty('--on', onColor);
+                root.setProperty('--on-glow', onColor);
+                root.setProperty('--off', hexToRgbA(offColor, offOpacity));
+                applyMode();
             }
 
             function pad(n) {
@@ -428,13 +476,11 @@
                 });
             }
 
-            applyMode();
             renderClock();
             renderColons();
             setInterval(renderClock, 1000);
             setInterval(renderColons, 500);
 
-            // --- 顏色設定面板 (僅在非 OBS 瀏覽器來源時顯示) ---
             function rgbStringToHex(str) {
                 const m = str.match(/\d+(\.\d+)?/g);
                 if (!m) return '#000000';
@@ -442,9 +488,52 @@
                 return '#' + [r, g, b].map(n => Math.round(n).toString(16).padStart(2, '0')).join('');
             }
 
-            const isObs = typeof window.obsstudio !== 'undefined';
+            const sync = new NekoSync('digital-time', { defaults: DEFAULTS, schemaVersion: 1 });
+            let config = sync.init();
+            const legacy = getLegacyUrlParams();
+            if (sync.migrateFromLegacyIfEmpty(legacy)) config = sync.loadLocal();
 
-            if (!isObs) {
+            function buildLegacyUrl(cfg) {
+                const u = new URL(window.location.href);
+                u.search = '';
+                if (String(cfg.seconds) === 'true') u.searchParams.set('seconds', '1');
+                u.searchParams.set('color', String(cfg.color).replace('#', ''));
+                u.searchParams.set('off-color', String(cfg.offColor).replace('#', ''));
+                u.searchParams.set('off-opacity', cfg.offOpacity);
+                u.searchParams.set('obs', '1');
+                return u.toString();
+            }
+
+            function fillForm(cfg) {
+                const inputSeconds = document.getElementById('p-seconds');
+                const inputOn = document.getElementById('p-on');
+                const inputOff = document.getElementById('p-off');
+                const inputOffOpacity = document.getElementById('p-off-opacity');
+                const offOpacityVal = document.getElementById('p-off-opacity-val');
+
+                inputOn.value = normalizeColor(cfg.color) || '#' + DEFAULTS.color;
+                inputOff.value = normalizeColor(cfg.offColor) || '#' + DEFAULTS.offColor;
+                inputSeconds.checked = String(cfg.seconds) === 'true';
+                inputOffOpacity.value = cfg.offOpacity;
+                offOpacityVal.textContent = cfg.offOpacity;
+            }
+
+            function readForm() {
+                const inputSeconds = document.getElementById('p-seconds');
+                const inputOn = document.getElementById('p-on');
+                const inputOff = document.getElementById('p-off');
+                const inputOffOpacity = document.getElementById('p-off-opacity');
+                return {
+                    seconds: inputSeconds.checked ? 'true' : 'false',
+                    color: inputOn.value,
+                    offColor: inputOff.value,
+                    offOpacity: inputOffOpacity.value
+                };
+            }
+
+            applyConfig(config);
+
+            if (!isOBSMode()) {
                 const panel = document.getElementById('color-panel');
                 const inputSeconds = document.getElementById('p-seconds');
                 const inputOn = document.getElementById('p-on');
@@ -453,46 +542,27 @@
                 const offOpacityVal = document.getElementById('p-off-opacity-val');
                 const urlBox = document.getElementById('p-url');
                 const copyBtn = document.getElementById('p-copy');
+                const obsUrlBox = document.getElementById('p-obs-url');
+                const obsCopyBtn = document.getElementById('p-obs-copy');
+                const obsToggleBtn = document.getElementById('p-obs-toggle');
 
-                const computed = getComputedStyle(document.documentElement);
-                inputOn.value = onColor && onColor.startsWith('#') ? onColor : rgbStringToHex(computed.getPropertyValue('--on'));
-                inputOff.value = offColor && offColor.startsWith('#') ? offColor : rgbStringToHex(computed.getPropertyValue('--off'));
-                inputSeconds.checked = showSeconds;
-                inputOffOpacity.value = offOpacity;
-                offOpacityVal.textContent = offOpacity;
+                fillForm(config);
+                urlBox.value = buildLegacyUrl(config);
+                obsUrlBox.value = sync.buildObsSourceUrl();
+                NekoMask.attach(obsUrlBox, obsToggleBtn);
 
-                function updateUrl() {
-                    const u = new URL(window.location.href);
-                    u.search = '';
-                    if (inputSeconds.checked) u.searchParams.set('seconds', '1');
-                    u.searchParams.set('color', inputOn.value.replace('#', ''));
-                    u.searchParams.set('off-color', inputOff.value.replace('#', ''));
-                    u.searchParams.set('off-opacity', inputOffOpacity.value);
-                    urlBox.value = u.toString();
+                function saveFromForm() {
+                    config = sync.save(readForm());
+                    urlBox.value = buildLegacyUrl(config);
                 }
 
-                function applyOnColor() {
-                    root.setProperty('--on', inputOn.value);
-                    root.setProperty('--on-glow', inputOn.value);
-                    updateUrl();
-                }
-
-                function applyOffColor() {
-                    root.setProperty('--off', hexToRgbA(inputOff.value, inputOffOpacity.value));
-                    updateUrl();
-                }
-
-                inputOn.addEventListener('input', applyOnColor);
-                inputOff.addEventListener('input', applyOffColor);
+                inputOn.addEventListener('input', saveFromForm);
+                inputOff.addEventListener('input', saveFromForm);
                 inputOffOpacity.addEventListener('input', () => {
                     offOpacityVal.textContent = inputOffOpacity.value;
-                    applyOffColor();
+                    saveFromForm();
                 });
-                inputSeconds.addEventListener('change', () => {
-                    showSeconds = inputSeconds.checked;
-                    applyMode();
-                    updateUrl();
-                });
+                inputSeconds.addEventListener('change', saveFromForm);
 
                 copyBtn.addEventListener('click', () => {
                     urlBox.select();
@@ -504,9 +574,29 @@
                     });
                 });
 
-                updateUrl();
+                obsCopyBtn.addEventListener('click', () => {
+                    obsUrlBox.select();
+                    navigator.clipboard.writeText(obsUrlBox.value).then(() => {
+                        obsCopyBtn.textContent = '已複製！';
+                        setTimeout(() => (obsCopyBtn.textContent = '複製'), 1200);
+                    }).catch(() => {
+                        document.execCommand('copy');
+                    });
+                });
+
+                NekoSyncPanel.mount(document.getElementById('syncPanelMount'), sync);
+
                 panel.classList.add('visible');
             }
+
+            sync.onChange((newConfig, source) => {
+                config = newConfig;
+                applyConfig(config);
+                if (!isOBSMode() && source === 'remote') {
+                    fillForm(config);
+                    document.getElementById('p-url').value = buildLegacyUrl(config);
+                }
+            });
         </script>
 
     </body>

@@ -69,7 +69,6 @@
                 margin-left: 20px;
             }
 
-            /* Config panel styles (non-OBS only) */
             #content {
                 font-family: 'Noto Sans TC';
                 font-size: 16px;
@@ -100,7 +99,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">文字</label>
-                        <p class="form-text">瀏覽器的網址限制長度為 <code>2,048</code>，如果您需要超過此字元數量，請 <a href="https://github.com/haer0248/nekolive-tools/blob/main/obs_marquee/index.html" target="_blank" rel="noopener noreferrer">下載檔案</a> 自行變更。</p>
+                        <p class="form-text">設定已改用雲端/本機儲存，不再受網址長度限制。</p>
                         <div id="text-list"></div>
                         <button class="btn btn-outline-success btn-sm" type="button" id="add-text">新增</button>
                     </div>
@@ -174,10 +173,25 @@
                         <p class="form-text">預設 6</p>
                     </div>
 
-                    <button type="button" id="btn-generate" class="btn btn-success">產生預覽</button>
-                    <p class="form-text">點選產生後，點選下方預覽就會自動複製，貼上到 OBS 後就可以使用了。</p>
+                    <button type="button" id="btn-generate" class="btn btn-success">儲存並套用設定</button>
+                    <p class="form-text">按下後畫面預覽會立即更新；如果已經設定雲端同步，OBS 裡的來源畫面也會同步更新，不需要重新貼網址。</p>
 
-                    <textarea class="form-control" readonly id="preview" cols="30" rows="3"></textarea>
+                    <div class="mb-3">
+                        <label for="obsUrl" class="form-label">OBS 瀏覽器來源網址（只需要貼一次）</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" readonly id="obsUrl">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleObsUrl">顯示</button>
+                            <button class="btn btn-outline-secondary" type="button" id="copyObsUrl">複製</button>
+                        </div>
+                    </div>
+
+                    <details class="mb-3">
+                        <summary class="form-text" style="cursor:pointer;">進階：沒有設定雲端同步？改用傳統網址參數</summary>
+                        <p class="form-text mt-2">傳統網址參數（受瀏覽器 <code>2,048</code> 字元長度限制）：</p>
+                        <textarea class="form-control" readonly id="preview" cols="30" rows="3"></textarea>
+                    </details>
+
+                    <div id="syncPanelMount"></div>
                 </div>
             </div>
         </div>
@@ -190,9 +204,11 @@
             </div>
         </div>
 
-        <script>
-            // ── Helpers ──────────────────────────────────────────────────────────
+        <script src="/static/shared/sync-server-config.js"></script>
+        <script src="/static/shared/sync-store.js"></script>
+        <script src="/static/shared/sync-panel.js"></script>
 
+        <script>
             function hex2rgb(hex) {
                 const default_ = 'rgb(0,0,0)';
                 if (!hex) return default_;
@@ -205,18 +221,13 @@
                 return `rgb(${r},${g},${b})`;
             }
 
-            // ── Sanitize URL params before touching DOM/CSS ───────────────────────
-
             function sanitizeColor(val, fallback) {
-                // Only allow valid hex colors (#RGB or #RRGGBB)
                 return /^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?$/.test(val) ? val : fallback;
             }
             function sanitizeSize(val, fallback) {
-                // Only allow number + px/em/rem/% units
                 return /^\d+(\.\d+)?(px|em|rem|%)$/.test(val) ? val : fallback;
             }
             function sanitizeAngle(val, fallback) {
-                // Only allow integers 0–360
                 const n = parseInt(val, 10);
                 return (!isNaN(n) && n >= 0 && n <= 360) ? String(n) : fallback;
             }
@@ -225,8 +236,6 @@
                 return (!isNaN(n) && n > 0 && n <= 100) ? String(n) : fallback;
             }
             function sanitizeFont(val, fallback) {
-                // Strip anything that could be used for CSS injection
-                // Allow: letters, digits, spaces, commas, quotes, hyphens, underscores, dots
                 return /^[a-zA-Z0-9\u4e00-\u9fff ,'".\-_]+$/.test(val) ? val : fallback;
             }
             function sanitizeDirection(val) {
@@ -234,133 +243,31 @@
             }
 
             const params = new URLSearchParams(window.location.search);
-
             const isOBS = /OBS/.test(navigator.userAgent) || params.get('obs') === '1';
 
-            const position = params.get('position') === 'bottom' ? 'bottom: 0;' : 'top: 0;';
-            const font = sanitizeFont(params.get('font') || '', "'Noto Sans TC', sans-serif");
-            const timerEnable = (params.get('timerEnable') ?? '1') === '1';
-            const size = sanitizeSize(params.get('size') || '', '120%');
-            const transparent = params.get('transparent') === 'true';
-            const rawText = params.get('text') || '預設文字。[BR]第二行[BR]更多行';
-            const text = rawText.replace(/%5BBR%5D/gi, '[BR]');
-            const font_color = sanitizeColor(params.get('font_color') || '', '#000000');
-            const color = sanitizeColor(params.get('color') || '', '#FD783A');
-            const color_end = sanitizeColor(params.get('color_end') || '', '#FF9797');
-            const angle = sanitizeAngle(params.get('angle') || '', '270');
-            const direction = sanitizeDirection(params.get('direction') || '');
-            const scrollamount = sanitizeScrollAmount(params.get('scrollamount') || '', '6');
+            const DEFAULTS = {
+                position: 'top',
+                font: "'Noto Sans TC', sans-serif",
+                timerEnable: '1',
+                size: '120%',
+                transparent: 'false',
+                text: '預設文字。[BR]第二行[BR]更多行',
+                font_color: '#000000',
+                color: '#FD783A',
+                color_end: '#FF9797',
+                angle: '270',
+                direction: 'left',
+                scrollamount: '6'
+            };
 
-            const messages = text.split('[BR]');
-
-            let show_color = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color);
-            let show_color_end = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color_end);
-
-            // ── Apply styles to marquee box ───────────────────────────────────────
-
-            const mainBox = document.getElementById('main-box');
-            mainBox.style.backgroundImage = `linear-gradient(${angle}deg, ${show_color} 0%, ${show_color_end} 100%)`;
-            mainBox.style.color = font_color;
-            mainBox.style.fontSize = size;
-            mainBox.style.fontFamily = font;
-            mainBox.style.cssText += position; // append top/bottom
-
-            document.getElementById('time').style.fontFamily = font;
-
-            // ── Build marquee element ─────────────────────────────────────────────
-
-            const messagesEl = document.getElementById('messages');
-            const marqueeEl = document.createElement('marquee');
-            marqueeEl.setAttribute('direction', direction);
-            marqueeEl.setAttribute('scrollamount', scrollamount);
-            marqueeEl.setAttribute('id', 'messages');
-
-            messages.forEach(msg => {
-                const span = document.createElement('span');
-                span.textContent = msg;  // XSS fix: never use innerHTML with URL params
-                marqueeEl.appendChild(span);
-            });
-
-            messagesEl.appendChild(marqueeEl);
-
-            // ── Clock ─────────────────────────────────────────────────────────────
-
-            const clock = document.getElementById('time');
-            if (timerEnable) {
-                clock.style.display = 'block';
-                const pad = x => x < 10 ? '0' + x : x;
-                const ticktock = () => {
-                    const t = new Date();
-                    clock.innerHTML = '🕒 ' + [pad(t.getHours()), pad(t.getMinutes())].join(':');
-                };
-                ticktock();
-                setInterval(ticktock, 1000);
+            function getLegacyUrlParams() {
+                const out = {};
+                let has = false;
+                Object.keys(DEFAULTS).forEach(key => {
+                    if (params.has(key)) { out[key] = params.get(key); has = true; }
+                });
+                return has ? out : null;
             }
-
-            // ── Config panel (non-OBS only) ───────────────────────────────────────
-
-            if (!isOBS) {
-                document.body.setAttribute('data-bs-theme', 'dark');
-                document.getElementById('content').style.display = '';
-
-                // Restore form values from URL params
-                document.getElementById('timer').checked = timerEnable;
-                document.getElementById('font').value = params.get('font') || "'Noto Sans TC', sans-serif";
-                document.getElementById('font_color').value = font_color;
-                document.getElementById('fontColorPicker').value = font_color;
-                document.getElementById('size').value = params.get('size') || '120%';
-                document.getElementById('color').value = color;
-                document.getElementById('colorPicker').value = color;
-                document.getElementById('color_end').value = color_end;
-                document.getElementById('colorEndPicker').value = color_end;
-                document.getElementById('scrollamount').value = scrollamount;
-
-                setSelectValue('position', params.get('position') || 'top');
-                setSelectValue('direction', direction);
-                setSelectValue('angle', angle);
-                setSelectValue('transparent', params.get('transparent') || 'false');
-
-                // Restore text list
-                let textLineId = 0;
-                messages.forEach(msg => addTextRow(msg));
-
-                // ── Text list add / remove ────────────────────────────────────────
-
-                document.getElementById('add-text').addEventListener('click', () => addTextRow(''));
-
-                document.getElementById('text-list').addEventListener('click', e => {
-                    const btn = e.target.closest('button[data-del]');
-                    if (btn) btn.closest('.input-group').remove();
-                });
-
-                // ── Color picker sync ─────────────────────────────────────────────
-
-                document.getElementById('fontColorPicker').addEventListener('input', e => {
-                    document.getElementById('font_color').value = e.target.value;
-                });
-                document.getElementById('colorPicker').addEventListener('input', e => {
-                    document.getElementById('color').value = e.target.value;
-                });
-                document.getElementById('colorEndPicker').addEventListener('input', e => {
-                    document.getElementById('color_end').value = e.target.value;
-                });
-
-                // ── Generate URL ──────────────────────────────────────────────────
-
-                document.getElementById('btn-generate').addEventListener('click', generateUrl);
-
-                document.getElementById('preview').addEventListener('click', function () {
-                    this.select();
-                    document.execCommand('copy');
-                    this.classList.add('is-valid');
-                    setTimeout(() => this.classList.remove('is-valid'), 3000);
-                });
-
-                // Auto-generate if URL already has params
-                if (params.has('text')) generateUrl();
-            }
-
-            // ── Helpers ───────────────────────────────────────────────────────────
 
             function setSelectValue(id, val) {
                 const el = document.getElementById(id);
@@ -381,27 +288,174 @@
                 return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
 
-            function generateUrl() {
-                const inputs = [...document.querySelectorAll('#text-list input[name="text-pre[]"]')];
-                const textVal = inputs.map(i => i.value).join('[BR]');
+            let clockStarted = false;
 
-                const url = new URL(location.href.split('?')[0]);
-                url.searchParams.set('text', textVal);
-                url.searchParams.set('timerEnable', document.getElementById('timer').checked ? '1' : '0');
-                url.searchParams.set('font', document.getElementById('font').value);
-                url.searchParams.set('font_color', document.getElementById('font_color').value);
-                url.searchParams.set('size', document.getElementById('size').value);
-                url.searchParams.set('color', document.getElementById('color').value);
-                url.searchParams.set('color_end', document.getElementById('color_end').value);
-                url.searchParams.set('angle', document.getElementById('angle').value);
-                url.searchParams.set('scrollamount', document.getElementById('scrollamount').value);
-                url.searchParams.set('direction', document.getElementById('direction').value);
-                url.searchParams.set('transparent', document.getElementById('transparent').value);
-                url.searchParams.set('position', document.getElementById('position').value);
-                url.searchParams.set('obs', '1');
+            function applyConfig(cfg) {
+                const positionCss = cfg.position === 'bottom' ? 'bottom: 0;' : 'top: 0;';
+                const font = sanitizeFont(cfg.font || '', DEFAULTS.font);
+                const timerEnable = String(cfg.timerEnable) !== '0';
+                const size = sanitizeSize(cfg.size || '', DEFAULTS.size);
+                const transparent = String(cfg.transparent) === 'true';
+                const text = (cfg.text || DEFAULTS.text).replace(/%5BBR%5D/gi, '[BR]');
+                const font_color = sanitizeColor(cfg.font_color || '', DEFAULTS.font_color);
+                const color = sanitizeColor(cfg.color || '', DEFAULTS.color);
+                const color_end = sanitizeColor(cfg.color_end || '', DEFAULTS.color_end);
+                const angle = sanitizeAngle(cfg.angle || '', DEFAULTS.angle);
+                const direction = sanitizeDirection(cfg.direction || '');
+                const scrollamount = sanitizeScrollAmount(cfg.scrollamount || '', DEFAULTS.scrollamount);
 
-                document.getElementById('preview').value = url.toString();
+                const messages = text.split('[BR]');
+                const show_color = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color);
+                const show_color_end = transparent ? 'rgba(0,0,0,0)' : hex2rgb(color_end);
+
+                const mainBox = document.getElementById('main-box');
+                mainBox.style.cssText = '';
+                mainBox.style.backgroundImage = `linear-gradient(${angle}deg, ${show_color} 0%, ${show_color_end} 100%)`;
+                mainBox.style.color = font_color;
+                mainBox.style.fontSize = size;
+                mainBox.style.fontFamily = font;
+                mainBox.style.cssText += positionCss;
+
+                document.getElementById('time').style.fontFamily = font;
+
+                const messagesContainer = document.querySelector('.main-content');
+                const oldMarquee = document.getElementById('messages');
+                const marqueeEl = document.createElement('marquee');
+                marqueeEl.setAttribute('direction', direction);
+                marqueeEl.setAttribute('scrollamount', scrollamount);
+                marqueeEl.setAttribute('id', 'messages');
+                messages.forEach(msg => {
+                    const span = document.createElement('span');
+                    span.textContent = msg;
+                    marqueeEl.appendChild(span);
+                });
+                oldMarquee.replaceWith(marqueeEl);
+
+                const clock = document.getElementById('time');
+                clock.style.display = timerEnable ? 'block' : 'none';
+                if (!clockStarted) {
+                    clockStarted = true;
+                    const pad = x => x < 10 ? '0' + x : x;
+                    const ticktock = () => {
+                        const t = new Date();
+                        clock.innerHTML = '🕒 ' + [pad(t.getHours()), pad(t.getMinutes())].join(':');
+                    };
+                    ticktock();
+                    setInterval(ticktock, 1000);
+                }
             }
+
+            function fillForm(cfg) {
+                document.getElementById('timer').checked = String(cfg.timerEnable) !== '0';
+                document.getElementById('font').value = cfg.font || DEFAULTS.font;
+                document.getElementById('font_color').value = cfg.font_color || DEFAULTS.font_color;
+                document.getElementById('fontColorPicker').value = cfg.font_color || DEFAULTS.font_color;
+                document.getElementById('size').value = cfg.size || DEFAULTS.size;
+                document.getElementById('color').value = cfg.color || DEFAULTS.color;
+                document.getElementById('colorPicker').value = cfg.color || DEFAULTS.color;
+                document.getElementById('color_end').value = cfg.color_end || DEFAULTS.color_end;
+                document.getElementById('colorEndPicker').value = cfg.color_end || DEFAULTS.color_end;
+                document.getElementById('scrollamount').value = cfg.scrollamount || DEFAULTS.scrollamount;
+
+                setSelectValue('position', cfg.position || DEFAULTS.position);
+                setSelectValue('direction', cfg.direction || DEFAULTS.direction);
+                setSelectValue('angle', cfg.angle || DEFAULTS.angle);
+                setSelectValue('transparent', cfg.transparent || DEFAULTS.transparent);
+
+                document.getElementById('text-list').innerHTML = '';
+                const messages = (cfg.text || DEFAULTS.text).replace(/%5BBR%5D/gi, '[BR]').split('[BR]');
+                messages.forEach(msg => addTextRow(msg));
+            }
+
+            function readForm() {
+                const inputs = [...document.querySelectorAll('#text-list input[name="text-pre[]"]')];
+                return {
+                    text: inputs.map(i => i.value).join('[BR]'),
+                    timerEnable: document.getElementById('timer').checked ? '1' : '0',
+                    font: document.getElementById('font').value,
+                    font_color: document.getElementById('font_color').value,
+                    size: document.getElementById('size').value,
+                    color: document.getElementById('color').value,
+                    color_end: document.getElementById('color_end').value,
+                    angle: document.getElementById('angle').value,
+                    scrollamount: document.getElementById('scrollamount').value,
+                    direction: document.getElementById('direction').value,
+                    transparent: document.getElementById('transparent').value,
+                    position: document.getElementById('position').value
+                };
+            }
+
+            function buildLegacyUrl(cfg) {
+                const url = new URL(location.href.split('?')[0]);
+                Object.keys(DEFAULTS).forEach(key => url.searchParams.set(key, cfg[key]));
+                url.searchParams.set('obs', '1');
+                return url.toString();
+            }
+
+            const sync = new NekoSync('obs-marquee', { defaults: DEFAULTS, schemaVersion: 1 });
+            let config = sync.init();
+            const legacy = getLegacyUrlParams();
+            if (sync.migrateFromLegacyIfEmpty(legacy)) config = sync.loadLocal();
+
+            applyConfig(config);
+
+            if (!isOBS) {
+                document.body.setAttribute('data-bs-theme', 'dark');
+                document.getElementById('content').style.display = '';
+
+                fillForm(config);
+                document.getElementById('preview').value = buildLegacyUrl(config);
+                document.getElementById('obsUrl').value = sync.buildObsSourceUrl();
+                NekoMask.attach(document.getElementById('obsUrl'), document.getElementById('toggleObsUrl'));
+
+                document.getElementById('add-text').addEventListener('click', () => addTextRow(''));
+
+                document.getElementById('text-list').addEventListener('click', e => {
+                    const btn = e.target.closest('button[data-del]');
+                    if (btn) btn.closest('.input-group').remove();
+                });
+
+                document.getElementById('fontColorPicker').addEventListener('input', e => {
+                    document.getElementById('font_color').value = e.target.value;
+                });
+                document.getElementById('colorPicker').addEventListener('input', e => {
+                    document.getElementById('color').value = e.target.value;
+                });
+                document.getElementById('colorEndPicker').addEventListener('input', e => {
+                    document.getElementById('color_end').value = e.target.value;
+                });
+
+                document.getElementById('btn-generate').addEventListener('click', function () {
+                    config = sync.save(readForm());
+                    document.getElementById('preview').value = buildLegacyUrl(config);
+                });
+
+                document.getElementById('copyObsUrl').addEventListener('click', function () {
+                    const input = document.getElementById('obsUrl');
+                    input.select();
+                    try { navigator.clipboard.writeText(input.value); } catch (e) { document.execCommand('copy'); }
+                    this.textContent = '已複製！';
+                    setTimeout(() => { this.textContent = '複製'; }, 1500);
+                });
+
+                document.getElementById('preview').addEventListener('click', function () {
+                    this.select();
+                    document.execCommand('copy');
+                    this.classList.add('is-valid');
+                    setTimeout(() => this.classList.remove('is-valid'), 3000);
+                });
+
+                NekoSyncPanel.mount(document.getElementById('syncPanelMount'), sync);
+            }
+
+            sync.onChange((newConfig, source) => {
+                config = newConfig;
+                applyConfig(config);
+                if (!isOBS && source === 'remote') {
+                    fillForm(config);
+                    document.getElementById('preview').value = buildLegacyUrl(config);
+                }
+            });
         </script>
 
         <!-- Google tag (gtag.js) -->

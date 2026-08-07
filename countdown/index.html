@@ -13,6 +13,7 @@
         <link rel="icon" href="https://haer0248.me/favicon.ico" />
         <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
 
+        <link rel="stylesheet" href="https://widgets.nekolive.net/assets/bootstrap.min.css" />
         <link rel="stylesheet" href="/static/countdown/style.min.css" />
     </head>
 
@@ -62,13 +63,30 @@
                     隱藏版權文字
                 </label>
 
-                <div class="gen-result" id="g-result" style="display:flex">
-                    <div class="gen-url-box" id="g-url-display"></div>
-                    <div class="gen-actions">
-                        <button id="copy-btn" onclick="copyUrl()">複製連結</button>
-                        <button onclick="openUrl()">開啟預覽</button>
+                <div class="gen-field">
+                    <label>OBS 瀏覽器來源網址（只需要貼一次，之後改設定會自動同步）</label>
+                    <div class="gen-result" style="display:flex">
+                        <input type="password" id="g-obs-url" readonly autocomplete="off" style="width:100%; box-sizing:border-box;">
+                        <div class="gen-actions">
+                            <button id="obs-toggle-btn" onclick="toggleObsUrl()">顯示</button>
+                            <button id="copy-obs-btn" onclick="copyObsUrl()">複製</button>
+                            <button onclick="openObsUrl()">開啟預覽</button>
+                        </div>
                     </div>
                 </div>
+
+                <details style="margin-top: .5rem;">
+                    <summary style="cursor:pointer;">進階：沒有設定雲端同步？改用傳統網址參數</summary>
+                    <div class="gen-result" id="g-result" style="display:flex; margin-top: .5rem;">
+                        <div class="gen-url-box" id="g-url-display"></div>
+                        <div class="gen-actions">
+                            <button id="copy-btn" onclick="copyUrl()">複製連結</button>
+                            <button onclick="openUrl()">開啟預覽</button>
+                        </div>
+                    </div>
+                </details>
+
+                <div id="syncPanelMount" style="margin-top: 1rem;"></div>
             </div>
         </div>
 
@@ -137,6 +155,9 @@
 
         </div>
 
+        <script src="/static/shared/sync-server-config.js"></script>
+        <script src="/static/shared/sync-store.js"></script>
+        <script src="/static/shared/sync-panel.js"></script>
         <script src="/static/countdown/main.min.js"></script>
     </body>
 

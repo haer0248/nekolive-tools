@@ -229,6 +229,7 @@ body {
 }
 
 .gen-field input[type="text"],
+.gen-field input[type="password"],
 .gen-field input[type="datetime-local"] {
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;

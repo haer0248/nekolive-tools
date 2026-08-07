@@ -12,6 +12,8 @@
 
         <link rel="icon" href="https://haer0248.me/favicon.ico" />
         <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <link rel="stylesheet" href="https://widgets.nekolive.net/assets/bootstrap.min.css" />
     </head>
 
     <body>
@@ -29,6 +31,15 @@
                 font-family: "Noto Sans JP", sans-serif;
                 width: 100%;
                 height: 100%;
+            }
+
+            html {
+                overflow-y: auto;
+            }
+
+            #info {
+                max-height: 100vh;
+                overflow-y: auto;
             }
 
             .time_display {
@@ -53,80 +64,199 @@
         </style>
 
         <div id="info" class="info" style="display: none;">
-            <p>網址 ?y=<span id="year-display"></span>&m=1&d=1&t=00:00:00&msg=<span class="highlight-purple">距離 <span id="year-display2"></span> 還有</span>&end=<span class="highlight-blue">新年快樂！</span></p>
-            <p>時間未到會顯示<span class="highlight-purple">距離 <span id="year-display3"></span> 還有</span> (計時器) ，結束後會顯示<span class="highlight-blue">新年快樂！</span></p>
+            <div class="container">
+                <div class="card" data-bs-theme="dark">
+                    <div class="card-body">
+                        <div class="alert alert-info">【幫助模式】幫助模式已自動啟用，在 OBS 使用此幫助將會自動隱藏，無需輸入任何設定。</div>
+
+                        <form id="timerForm">
+                            <div class="mb-3">
+                                <label class="form-label">目標年份</label>
+                                <input type="text" class="form-control" id="y" placeholder="預設：明年">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">目標月份</label>
+                                <input type="text" class="form-control" id="m" placeholder="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">目標日期</label>
+                                <input type="text" class="form-control" id="d" placeholder="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">目標時間</label>
+                                <input type="text" class="form-control" id="t" placeholder="00:00:00">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">倒數中顯示文字</label>
+                                <input type="text" class="form-control" id="msg" placeholder="距離 {年份} 還有">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">結束後顯示文字</label>
+                                <input type="text" class="form-control" id="end" placeholder="新年快樂！">
+                            </div>
+
+                            <button type="button" id="btn-generate" class="btn btn-success">儲存並套用設定</button>
+                            <p class="form-text">按下後畫面預覽會立即更新；如果已經設定雲端同步，OBS 裡的來源畫面也會同步更新，不需要重新貼網址。</p>
+
+                            <div class="mb-3">
+                                <label for="obsUrl" class="form-label">OBS 瀏覽器來源網址（只需要貼一次）</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" readonly id="obsUrl">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleObsUrl">顯示</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="copyObsUrl">複製</button>
+                                </div>
+                            </div>
+
+                            <details class="mb-3">
+                                <summary class="form-text" style="cursor:pointer;">進階：沒有設定雲端同步？改用傳統網址參數</summary>
+                                <textarea class="form-control" readonly id="preview" cols="30" rows="2"></textarea>
+                            </details>
+
+                            <div id="syncPanelMount"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="time_display" id="timer"></div>
 
-        <script>
-            // Function to get URL parameters
-            function getUrlParameter(name) {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get(name);
-            }
+        <script src="/static/shared/sync-server-config.js"></script>
+        <script src="/static/shared/sync-store.js"></script>
+        <script src="/static/shared/sync-panel.js"></script>
 
-            // Function to strip HTML tags (equivalent to PHP's strip_tags)
+        <script>
             function stripTags(str) {
                 if (!str) return str;
                 return str.replace(/<[^>]*>/g, '');
             }
 
-            // Get parameters from URL with defaults
-            const year = getUrlParameter('y') || (new Date().getFullYear() + 1);
-            const month = getUrlParameter('m') || '1';
-            const day = getUrlParameter('d') || '1';
-            const time = getUrlParameter('t') || '00:00:00';
-            const msg = stripTags(getUrlParameter('msg')) || `距離 ${year} 還有`;
-            const end = stripTags(getUrlParameter('end')) || '新年快樂！';
-            const isOBS = navigator.userAgent.includes('OBS') || getUrlParameter('obs') === '1';
+            const DEFAULTS = { y: '', m: '1', d: '1', t: '00:00:00', msg: '', end: '新年快樂！' };
 
-            // Hide content if OBS
-            if (!isOBS) {
-                document.getElementById('info').style.display = 'block';
+            function getLegacyUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                const map = { y: 'y', m: 'm', d: 'd', t: 't', msg: 'msg', end: 'end' };
+                const out = {};
+                let has = false;
+                Object.keys(map).forEach(key => {
+                    if (params.has(key)) { out[key] = params.get(key); has = true; }
+                });
+                return has ? out : null;
             }
 
-            // Update year displays in info section
-            document.getElementById('year-display').textContent = year;
-            document.getElementById('year-display2').textContent = year;
-            document.getElementById('year-display3').textContent = year;
-
-            // Create countdown date
-            const dateString = `${month} ${day}, ${year} ${time}`;
-            let countDownDate = new Date(dateString).getTime();
-            let x = setInterval(timer, 1000);
-
-            function timer() {
-                let now = new Date().getTime();
-                let distance = countDownDate - now;
-
-                if (distance < 0) {
-                    clearInterval(x);
-                    document.getElementById("timer").innerHTML = end;
-                    return;
-                }
-
-                let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                // Add leading zeros
-                if (hours < 10) {
-                    hours = "0" + hours;
-                }
-                if (minutes < 10) {
-                    minutes = "0" + minutes;
-                }
-                if (seconds < 10) {
-                    seconds = "0" + seconds;
-                }
-
-                document.getElementById("timer").innerHTML = `${msg} ${days} 天 ${hours} 時 ${minutes} 分 ${seconds} 秒`;
+            function isOBSMode() {
+                return navigator.userAgent.includes('OBS') || new URLSearchParams(window.location.search).get('obs') === '1';
             }
 
-            // Start the timer immediately
-            timer();
+            const sync = new NekoSync('custom-timer', { defaults: DEFAULTS, schemaVersion: 1 });
+            let config = sync.init();
+            const legacy = getLegacyUrlParams();
+            if (sync.migrateFromLegacyIfEmpty(legacy)) config = sync.loadLocal();
+
+            let timerInterval = null;
+
+            function applyConfig(cfg) {
+                const year = cfg.y || (new Date().getFullYear() + 1);
+                const month = cfg.m || '1';
+                const day = cfg.d || '1';
+                const time = cfg.t || '00:00:00';
+                const msg = stripTags(cfg.msg) || `距離 ${year} 還有`;
+                const end = stripTags(cfg.end) || '新年快樂！';
+
+                const dateString = `${month} ${day}, ${year} ${time}`;
+                const countDownDate = new Date(dateString).getTime();
+
+                if (timerInterval) clearInterval(timerInterval);
+
+                function tick() {
+                    const now = new Date().getTime();
+                    const distance = countDownDate - now;
+
+                    if (distance < 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('timer').innerHTML = end;
+                        return;
+                    }
+
+                    let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    if (hours < 10) hours = '0' + hours;
+                    if (minutes < 10) minutes = '0' + minutes;
+                    if (seconds < 10) seconds = '0' + seconds;
+
+                    document.getElementById('timer').innerHTML = `${msg} ${days} 天 ${hours} 時 ${minutes} 分 ${seconds} 秒`;
+                }
+
+                tick();
+                timerInterval = setInterval(tick, 1000);
+            }
+
+            function fillForm(cfg) {
+                document.getElementById('y').value = cfg.y || '';
+                document.getElementById('m').value = cfg.m || '';
+                document.getElementById('d').value = cfg.d || '';
+                document.getElementById('t').value = cfg.t || '';
+                document.getElementById('msg').value = cfg.msg || '';
+                document.getElementById('end').value = cfg.end || '';
+            }
+
+            function readForm() {
+                return {
+                    y: document.getElementById('y').value,
+                    m: document.getElementById('m').value || '1',
+                    d: document.getElementById('d').value || '1',
+                    t: document.getElementById('t').value || '00:00:00',
+                    msg: document.getElementById('msg').value,
+                    end: document.getElementById('end').value
+                };
+            }
+
+            function buildLegacyUrl(cfg) {
+                const params = new URLSearchParams();
+                Object.keys(DEFAULTS).forEach(k => { if (cfg[k]) params.set(k, cfg[k]); });
+                params.set('obs', '1');
+                return location.origin + location.pathname + '?' + params.toString();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                if (!isOBSMode()) {
+                    document.getElementById('info').style.display = 'block';
+
+                    fillForm(config);
+                    document.getElementById('preview').value = buildLegacyUrl(config);
+                    document.getElementById('obsUrl').value = sync.buildObsSourceUrl();
+                    NekoMask.attach(document.getElementById('obsUrl'), document.getElementById('toggleObsUrl'));
+
+                    document.getElementById('btn-generate').addEventListener('click', function () {
+                        config = sync.save(readForm());
+                        document.getElementById('preview').value = buildLegacyUrl(config);
+                    });
+
+                    document.getElementById('copyObsUrl').addEventListener('click', function () {
+                        const input = document.getElementById('obsUrl');
+                        input.select();
+                        try { navigator.clipboard.writeText(input.value); } catch (e) { document.execCommand('copy'); }
+                        this.textContent = '已複製！';
+                        setTimeout(() => { this.textContent = '複製'; }, 1500);
+                    });
+
+                    NekoSyncPanel.mount(document.getElementById('syncPanelMount'), sync);
+                }
+
+                applyConfig(config);
+
+                sync.onChange((newConfig, source) => {
+                    config = newConfig;
+                    applyConfig(config);
+                    if (!isOBSMode() && source === 'remote') {
+                        fillForm(config);
+                        document.getElementById('preview').value = buildLegacyUrl(config);
+                    }
+                });
+            });
         </script>
 
         <!-- Google tag (gtag.js) -->

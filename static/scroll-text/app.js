@@ -2,28 +2,43 @@
 (function () {
     'use strict';
 
-    function getUrlParams() {
-        const params = new URLSearchParams(window.location.search);
-        return {
-            text: params.get('text') || '歡迎來到直播間！[BR]記得按下追隨與訂閱[BR]感謝大家的支持',
-            position: params.get('position') || 'bottom',
-            font: params.get('font') || "'Noto Sans TC', sans-serif",
-            size: params.get('size') || '200%',
-            font_color: params.get('font_color') || '#000000',
-            outline_color: params.get('outline_color') || '#ffffff',
-            outline_size: params.get('outline_size') || '3',
-            direction: params.get('direction') || 'up',
-            align: params.get('align') || 'center',
-            interval: params.get('interval') || '4',
-            speed: params.get('speed') || '0.6',
-            loop: params.get('loop') || '1',
-            wrap: params.get('wrap') || 'false',
-            obs: params.get('obs') || '0'
-        };
+    const DEFAULTS = {
+        text: '歡迎來到直播間！[BR]記得按下追隨與訂閱[BR]感謝大家的支持',
+        position: 'bottom',
+        font: "'Noto Sans TC', sans-serif",
+        size: '200%',
+        font_color: '#000000',
+        outline_color: '#ffffff',
+        outline_size: '3',
+        direction: 'up',
+        align: 'center',
+        interval: '4',
+        speed: '0.6',
+        loop: '1',
+        wrap: 'false'
+    };
+
+    const LEGACY_KEYS = Object.keys(DEFAULTS);
+
+    function getRawUrlParams() {
+        return new URLSearchParams(window.location.search);
+    }
+
+    function getLegacyUrlParams() {
+        const params = getRawUrlParams();
+        const out = {};
+        let has = false;
+        LEGACY_KEYS.forEach(key => {
+            if (params.has(key)) {
+                out[key] = params.get(key);
+                has = true;
+            }
+        });
+        return has ? out : null;
     }
 
     function isOBS() {
-        return navigator.userAgent.includes('OBS') || getUrlParams().obs === '1';
+        return navigator.userAgent.includes('OBS') || getRawUrlParams().get('obs') === '1';
     }
 
     const alignMap = {
@@ -34,29 +49,27 @@
 
     let tickerTimer = null;
 
-    function initializeTicker() {
-        const params = getUrlParams();
-
-        const text = params.text.replace(/%5BBR%5D/g, '[BR]');
+    function initializeTicker(config) {
+        const text = config.text.replace(/%5BBR%5D/g, '[BR]');
         const messages = text.split('[BR]').filter(m => m.trim() !== '');
         if (messages.length === 0) messages.push('');
 
         const mainBox = document.getElementById('mainBox');
         const tickerTrack = document.getElementById('tickerTrack');
-        const position = params.position === 'bottom' ? 'bottom: 0;' : 'top: 0;';
+        const position = config.position === 'bottom' ? 'bottom: 0;' : 'top: 0;';
 
-        Outline.update(tickerTrack, params.outline_size, params.outline_color);
+        Outline.update(tickerTrack, config.outline_size, config.outline_color);
 
         mainBox.style.cssText = `
             background: transparent;
             margin: 0 auto;
             width: 100%;
-            color: ${params.font_color};
+            color: ${config.font_color};
             font-weight: bold;
             position: fixed;
             align-items: center;
-            font-size: ${params.size};
-            font-family: ${params.font};
+            font-size: ${config.size};
+            font-family: ${config.font};
             padding: 10px 24px;
             box-sizing: border-box;
             ${position}
@@ -73,12 +86,12 @@
             tickerTimer = null;
         }
 
-        const justify = alignMap[params.align] || 'center';
-        const isWrap = params.wrap === 'true';
-        const speed = Math.max(0.1, parseFloat(params.speed) || 0.6);
-        const interval = Math.max(1, parseFloat(params.interval) || 4);
-        const loop = params.loop !== '0';
-        const direction = params.direction === 'down' ? 'down' : 'up';
+        const justify = alignMap[config.align] || 'center';
+        const isWrap = config.wrap === 'true';
+        const speed = Math.max(0.1, parseFloat(config.speed) || 0.6);
+        const interval = Math.max(1, parseFloat(config.interval) || 4);
+        const loop = config.loop !== '0';
+        const direction = config.direction === 'down' ? 'down' : 'up';
 
         function makeLine(msg) {
             const div = document.createElement('div');
@@ -156,26 +169,24 @@
         }
     }
 
-    function initializeForm() {
-        const params = getUrlParams();
-
-        document.getElementById('position').value = params.position;
-        document.getElementById('direction').value = params.direction;
-        document.getElementById('align').value = params.align;
-        document.getElementById('interval').value = params.interval;
-        document.getElementById('speed').value = params.speed;
-        document.getElementById('loop').value = params.loop;
-        document.getElementById('wrap').value = params.wrap;
-        document.getElementById('font_color').value = params.font_color;
-        document.getElementById('fontColorPicker').value = params.font_color;
-        document.getElementById('outline_color').value = params.outline_color;
-        document.getElementById('outlineColorPicker').value = params.font_color;
-        document.getElementById('outline_size').value = params.outline_size;
-        document.getElementById('font').value = params.font;
-        document.getElementById('size').value = params.size;
+    function fillForm(config) {
+        document.getElementById('position').value = config.position;
+        document.getElementById('direction').value = config.direction;
+        document.getElementById('align').value = config.align;
+        document.getElementById('interval').value = config.interval;
+        document.getElementById('speed').value = config.speed;
+        document.getElementById('loop').value = config.loop;
+        document.getElementById('wrap').value = config.wrap;
+        document.getElementById('font_color').value = config.font_color;
+        document.getElementById('fontColorPicker').value = config.font_color;
+        document.getElementById('outline_color').value = config.outline_color;
+        document.getElementById('outlineColorPicker').value = config.outline_color;
+        document.getElementById('outline_size').value = config.outline_size;
+        document.getElementById('font').value = config.font;
+        document.getElementById('size').value = config.size;
 
         const textList = document.getElementById('text-list');
-        const messages = params.text.replace(/%5BBR%5D/g, '[BR]').split('[BR]');
+        const messages = config.text.replace(/%5BBR%5D/g, '[BR]').split('[BR]');
         textList.innerHTML = '';
 
         messages.forEach((message, index) => {
@@ -188,84 +199,136 @@
             `;
             textList.appendChild(div);
         });
-
-        document.getElementById('fontColorPicker').addEventListener('change', function () {
-            document.getElementById('font_color').value = this.value;
-        });
-        document.getElementById('outlineColorPicker').addEventListener('change', function () {
-            document.getElementById('outline_color').value = this.value;
-        });
-
-        let nextId = messages.length;
-        document.getElementById('add-text').addEventListener('click', function () {
-            const template = `
-                <div class="input-group mb-1" data-id="${nextId}">
-                    <input type="text" name="text-pre[]" class="form-control text-input" placeholder="文字">
-                    <button class="btn btn-outline-danger del-text" type="button" data-id="${nextId}">刪除</button>
-                </div>
-            `;
-            document.getElementById('text-list').insertAdjacentHTML('beforeend', template);
-            nextId++;
-        });
-
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('del-text')) {
-                const id = e.target.getAttribute('data-id');
-                document.querySelector(`div[data-id="${id}"]`).remove();
-            }
-        });
-
-        document.getElementById('generatePreview').addEventListener('click', generateUrl);
-
-        document.getElementById('preview').addEventListener('click', function () {
-            this.select();
-            document.execCommand('copy');
-            this.classList.add('is-valid');
-
-            setTimeout(() => {
-                this.className = 'form-control';
-            }, 3000);
-        });
-
-        if (params.text && params.text !== '歡迎來到直播間！[BR]記得按下追隨與訂閱[BR]感謝大家的支持') {
-            generateUrl();
-        }
+        textList._nextId = messages.length;
     }
 
-    function generateUrl() {
-        let url = window.location.origin + window.location.pathname + '?';
-
+    function readFormConfig() {
         const textInputs = document.querySelectorAll('.text-input');
         const texts = Array.from(textInputs).map(input => input.value).filter(text => text.trim());
-        const convertedString = texts.join('[BR]');
+        return {
+            text: texts.join('[BR]'),
+            font: document.getElementById('font').value,
+            font_color: document.getElementById('font_color').value,
+            size: document.getElementById('size').value,
+            direction: document.getElementById('direction').value,
+            align: document.getElementById('align').value,
+            interval: document.getElementById('interval').value,
+            speed: document.getElementById('speed').value,
+            loop: document.getElementById('loop').value,
+            wrap: document.getElementById('wrap').value,
+            position: document.getElementById('position').value,
+            outline_color: document.getElementById('outline_color').value,
+            outline_size: document.getElementById('outline_size').value
+        };
+    }
 
-        url += `text=${encodeURIComponent(convertedString)}`;
-        url += `&font=${encodeURIComponent(document.getElementById('font').value)}`;
-        url += `&font_color=${encodeURIComponent(document.getElementById('font_color').value)}`;
-        url += `&size=${encodeURIComponent(document.getElementById('size').value)}`;
-        url += `&direction=${document.getElementById('direction').value}`;
-        url += `&align=${document.getElementById('align').value}`;
-        url += `&interval=${document.getElementById('interval').value}`;
-        url += `&speed=${document.getElementById('speed').value}`;
-        url += `&loop=${document.getElementById('loop').value}`;
-        url += `&wrap=${document.getElementById('wrap').value}`;
-        url += `&position=${document.getElementById('position').value}`;
-        url += `&outline_color=${encodeURIComponent(document.getElementById('outline_color').value)}`;
-        url += `&outline_size=${document.getElementById('outline_size').value}`;
+    function buildLegacyUrl(config) {
+        let url = window.location.origin + window.location.pathname + '?';
+        url += `text=${encodeURIComponent(config.text)}`;
+        url += `&font=${encodeURIComponent(config.font)}`;
+        url += `&font_color=${encodeURIComponent(config.font_color)}`;
+        url += `&size=${encodeURIComponent(config.size)}`;
+        url += `&direction=${config.direction}`;
+        url += `&align=${config.align}`;
+        url += `&interval=${config.interval}`;
+        url += `&speed=${config.speed}`;
+        url += `&loop=${config.loop}`;
+        url += `&wrap=${config.wrap}`;
+        url += `&position=${config.position}`;
+        url += `&outline_color=${encodeURIComponent(config.outline_color)}`;
+        url += `&outline_size=${config.outline_size}`;
         url += `&obs=1`;
-
-        document.getElementById('preview').value = url;
+        return url;
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        const sync = new NekoSync('scroll-text', { defaults: DEFAULTS, schemaVersion: 1 });
+
+        let config = sync.init();
+
+        const legacy = getLegacyUrlParams();
+        if (sync.migrateFromLegacyIfEmpty(legacy)) {
+            config = sync.loadLocal();
+        }
+
         if (isOBS()) {
             document.getElementById('content').style.display = 'none';
         } else {
             document.getElementById('content').style.display = 'block';
-            const body = document.querySelector("body");
+            const body = document.querySelector('body');
             body.setAttribute('data-bs-theme', 'dark');
-            initializeForm();
+
+            fillForm(config);
+            document.getElementById('obsUrl').value = sync.buildObsSourceUrl();
+            NekoMask.attach(document.getElementById('obsUrl'), document.getElementById('toggleObsUrl'));
+            document.getElementById('preview').value = buildLegacyUrl(config);
+
+            document.getElementById('fontColorPicker').addEventListener('change', function () {
+                document.getElementById('font_color').value = this.value;
+            });
+            document.getElementById('outlineColorPicker').addEventListener('change', function () {
+                document.getElementById('outline_color').value = this.value;
+            });
+
+            document.getElementById('add-text').addEventListener('click', function () {
+                const textList = document.getElementById('text-list');
+                const nextId = textList._nextId || textList.querySelectorAll('[data-id]').length;
+                const template = `
+                    <div class="input-group mb-1" data-id="${nextId}">
+                        <input type="text" name="text-pre[]" class="form-control text-input" placeholder="文字">
+                        <button class="btn btn-outline-danger del-text" type="button" data-id="${nextId}">刪除</button>
+                    </div>
+                `;
+                textList.insertAdjacentHTML('beforeend', template);
+                textList._nextId = nextId + 1;
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('del-text')) {
+                    const id = e.target.getAttribute('data-id');
+                    document.querySelector(`div[data-id="${id}"]`).remove();
+                }
+            });
+
+            document.getElementById('generatePreview').addEventListener('click', function () {
+                const newConfig = readFormConfig();
+                sync.save(newConfig);
+                document.getElementById('preview').value = buildLegacyUrl(newConfig);
+            });
+
+            document.getElementById('copyObsUrl').addEventListener('click', function () {
+                const input = document.getElementById('obsUrl');
+                input.select();
+                try {
+                    navigator.clipboard.writeText(input.value);
+                } catch (e) {
+                    document.execCommand('copy');
+                }
+                this.textContent = '已複製！';
+                setTimeout(() => { this.textContent = '複製'; }, 1500);
+            });
+
+            document.getElementById('preview').addEventListener('click', function () {
+                this.select();
+                document.execCommand('copy');
+                this.classList.add('is-valid');
+                setTimeout(() => {
+                    this.className = 'form-control';
+                }, 3000);
+            });
+
+            NekoSyncPanel.mount(document.getElementById('syncPanelMount'), sync);
         }
-        initializeTicker();
+
+        sync.onChange(function (newConfig, source) {
+            config = newConfig;
+            initializeTicker(config);
+            if (!isOBS() && source === 'remote') {
+                fillForm(config);
+                document.getElementById('preview').value = buildLegacyUrl(config);
+            }
+        });
+
+        initializeTicker(config);
     });
 })();

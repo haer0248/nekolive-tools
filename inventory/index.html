@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>簡單庫存計算 ◃ 網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <meta charset="utf-8" />
+        <meta name="theme-color" content="#91beff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <link rel="stylesheet" href="/static/styles.min.css" />
+
+        <style>
+            .items-table input[type="text"],
+            .items-table input[type="number"] {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.85rem;
+                min-width: 5.5rem;
+            }
+
+            .items-table th,
+            .items-table td {
+                white-space: nowrap;
+            }
+
+            .items-table td:first-child input {
+                min-width: 8rem;
+            }
+
+            .items-table .calc-cell {
+                font-family: 'JetBrains Mono', 'Noto Sans TC', monospace;
+                font-size: 0.83rem;
+            }
+
+            .calc-cell.negative {
+                color: #e87070;
+            }
+
+            .table-scroll {
+                overflow-x: auto;
+                border: 1px solid var(--border);
+                margin-bottom: 1rem;
+            }
+
+            .table-scroll table {
+                margin: 0;
+            }
+
+            .commission-field {
+                max-width: 220px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <a href="https://github.com/haer0248/nekolive-tools" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+        <div id="mainContent">
+            <nav class="site-nav">
+                <div class="site-nav-inner">
+                    <a href="https://tools.nekolive.net/" class="site-nav-brand">線上小工具</a>
+                </div>
+            </nav>
+
+            <div class="page-wide">
+                <h1 class="page-title">庫存計算小工具</h1>
+
+                <div class="callout info">
+                    輸入每項商品的庫存數量、單位成本與單位售價，可設定平台／通路抽成比例，即可即時算出總成本、總營收、抽成金額與淨收入。所有資料只會儲存在<strong>你目前這台瀏覽器的本機</strong>（localStorage），不會上傳到任何伺服器，換瀏覽器或清除快取就會消失。
+                </div>
+
+                <div class="section-label">全域設定</div>
+                <div class="form-group commission-field">
+                    <label for="commissionRate">平台／通路抽成 (%)</label>
+                    <input type="number" id="commissionRate" min="0" max="100" step="0.1" value="0">
+                    <p class="form-hint">會套用在下方每一項商品的總營收上，計算出「平台抽成金額」後再算淨收入。若無抽成請保持 0。</p>
+                </div>
+
+                <div class="section-label">商品清單</div>
+
+                <div class="table-scroll">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>商品名稱</th>
+                                <th class="text-right">庫存數量</th>
+                                <th class="text-right">單位成本</th>
+                                <th class="text-right">單位售價</th>
+                                <th class="text-right">總成本</th>
+                                <th class="text-right">總營收</th>
+                                <th class="text-right">平台抽成</th>
+                                <th class="text-right">淨收入</th>
+                                <th class="text-right">淨利率</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="addRowBtn">＋ 新增商品</button>
+                    <button class="btn" id="exportCsvBtn">匯出 CSV</button>
+                    <button class="btn" id="importCsvBtn">匯入 CSV</button>
+                    <input type="file" id="csvFileInput" accept=".csv,text/csv" class="hidden">
+                    <button class="btn btn-danger" id="clearBtn">清空全部</button>
+                </div>
+                <p class="form-hint" style="margin-top:-0.5rem;">匯入的 CSV 需依「匯出 CSV」的欄位順序（商品名稱、庫存數量、單位成本、單位售價...），若第一列是標題「商品名稱」會自動略過；匯入會覆蓋目前的商品清單。</p>
+
+                <div class="section-label">總覽</div>
+                <div class="result-summary">
+                    <div class="summary-card">
+                        <div class="summary-card-label">總庫存數量</div>
+                        <div class="summary-card-value" id="sumQty">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-label">總成本</div>
+                        <div class="summary-card-value" id="sumCost">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-label">總營收</div>
+                        <div class="summary-card-value" id="sumRevenue">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-label">平台抽成金額</div>
+                        <div class="summary-card-value warn" id="sumCommission">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-label">淨收入</div>
+                        <div class="summary-card-value" id="sumNet">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-label">整體淨利率</div>
+                        <div class="summary-card-value" id="sumMargin">0%</div>
+                    </div>
+                </div>
+
+                <p class="form-hint">淨收入 = 總營收 - 平台抽成金額 - 總成本。</p>
+            </div>
+
+            <footer class="site-footer">
+                <div class="site-footer-inner">
+                    Made with 🩵 <a href="https://haer0248.me/" target="_blank" rel="noopener noreferrer">猫又おにぎり (NekomataOnigiri)</a> • Powered by <a href="https://nekolive.net/" target="_blank" rel="noopener noreferrer">Nekolive.net</a>
+                </div>
+            </footer>
+        </div>
+
+        <script>
+            const STORAGE_KEY = 'nekolive_inventory_calc_v1';
+
+            function blankItem() {
+                return { name: '', qty: '', cost: '', price: '' };
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && Array.isArray(parsed.items) && parsed.items.length) {
+                            return {
+                                commissionRate: typeof parsed.commissionRate === 'number' ? parsed.commissionRate : 0,
+                                items: parsed.items
+                            };
+                        }
+                    }
+                } catch (e) { /* 忽略壞掉的本機資料 */ }
+                return { commissionRate: 0, items: [blankItem(), blankItem(), blankItem()] };
+            }
+
+            let state = loadState();
+
+            function saveState() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+
+            function num(v) {
+                const n = parseFloat(v);
+                return isFinite(n) ? n : 0;
+            }
+
+            function fmt(n) {
+                const rounded = Math.round(n * 100) / 100;
+                return rounded.toLocaleString('zh-TW', { maximumFractionDigits: 2 });
+            }
+
+            function computeRow(item) {
+                const qty = num(item.qty);
+                const cost = num(item.cost);
+                const price = num(item.price);
+                const commissionRate = num(state.commissionRate);
+
+                const totalCost = qty * cost;
+                const totalRevenue = qty * price;
+                const commissionAmt = totalRevenue * (commissionRate / 100);
+                const net = totalRevenue - commissionAmt - totalCost;
+                const margin = totalRevenue !== 0 ? (net / totalRevenue) * 100 : 0;
+
+                return { qty, totalCost, totalRevenue, commissionAmt, net, margin };
+            }
+
+            function render() {
+                const tbody = document.getElementById('itemsBody');
+                tbody.innerHTML = '';
+
+                let sumQty = 0, sumCost = 0, sumRevenue = 0, sumCommission = 0, sumNet = 0;
+
+                state.items.forEach((item, idx) => {
+                    const r = computeRow(item);
+                    sumQty += r.qty;
+                    sumCost += r.totalCost;
+                    sumRevenue += r.totalRevenue;
+                    sumCommission += r.commissionAmt;
+                    sumNet += r.net;
+
+                    const tr = document.createElement('tr');
+
+                    tr.innerHTML = `
+                        <td><input type="text" data-idx="${idx}" data-field="name" placeholder="商品名稱" value="${escapeAttr(item.name)}"></td>
+                        <td class="text-right"><input type="number" data-idx="${idx}" data-field="qty" min="0" step="1" value="${escapeAttr(item.qty)}"></td>
+                        <td class="text-right"><input type="number" data-idx="${idx}" data-field="cost" min="0" step="0.01" value="${escapeAttr(item.cost)}"></td>
+                        <td class="text-right"><input type="number" data-idx="${idx}" data-field="price" min="0" step="0.01" value="${escapeAttr(item.price)}"></td>
+                        <td class="text-right calc-cell">${fmt(r.totalCost)}</td>
+                        <td class="text-right calc-cell">${fmt(r.totalRevenue)}</td>
+                        <td class="text-right calc-cell">${fmt(r.commissionAmt)}</td>
+                        <td class="text-right calc-cell ${r.net < 0 ? 'negative' : ''}">${fmt(r.net)}</td>
+                        <td class="text-right calc-cell ${r.margin < 0 ? 'negative' : ''}">${fmt(r.margin)}%</td>
+                        <td class="text-right"><button class="btn btn-danger btn-sm" data-action="delete" data-idx="${idx}">✕</button></td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+
+                const overallMargin = sumRevenue !== 0 ? (sumNet / sumRevenue) * 100 : 0;
+
+                document.getElementById('sumQty').textContent = fmt(sumQty);
+                document.getElementById('sumCost').textContent = fmt(sumCost);
+                document.getElementById('sumRevenue').textContent = fmt(sumRevenue);
+                document.getElementById('sumCommission').textContent = fmt(sumCommission);
+
+                const sumNetEl = document.getElementById('sumNet');
+                sumNetEl.textContent = fmt(sumNet);
+                sumNetEl.className = 'summary-card-value' + (sumNet < 0 ? ' danger' : '');
+
+                const sumMarginEl = document.getElementById('sumMargin');
+                sumMarginEl.textContent = fmt(overallMargin) + '%';
+                sumMarginEl.className = 'summary-card-value' + (overallMargin < 0 ? ' danger' : '');
+            }
+
+            function escapeAttr(v) {
+                return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            }
+
+            document.getElementById('itemsBody').addEventListener('input', (e) => {
+                const target = e.target;
+                const idx = target.getAttribute('data-idx');
+                const field = target.getAttribute('data-field');
+                if (idx === null || !field) return;
+
+                state.items[idx][field] = target.value;
+                saveState();
+
+                // 只重新計算，不整個重繪，避免輸入焦點被打斷
+                recalcRowDisplay(Number(idx));
+                recalcSummary();
+            });
+
+            function recalcRowDisplay(idx) {
+                const item = state.items[idx];
+                const r = computeRow(item);
+                const tr = document.getElementById('itemsBody').children[idx];
+                if (!tr) return;
+                const cells = tr.querySelectorAll('.calc-cell');
+                cells[0].textContent = fmt(r.totalCost);
+                cells[1].textContent = fmt(r.totalRevenue);
+                cells[2].textContent = fmt(r.commissionAmt);
+                cells[3].textContent = fmt(r.net);
+                cells[3].className = 'text-right calc-cell' + (r.net < 0 ? ' negative' : '');
+                cells[4].textContent = fmt(r.margin) + '%';
+                cells[4].className = 'text-right calc-cell' + (r.margin < 0 ? ' negative' : '');
+            }
+
+            function recalcSummary() {
+                let sumQty = 0, sumCost = 0, sumRevenue = 0, sumCommission = 0, sumNet = 0;
+                state.items.forEach((item) => {
+                    const r = computeRow(item);
+                    sumQty += r.qty;
+                    sumCost += r.totalCost;
+                    sumRevenue += r.totalRevenue;
+                    sumCommission += r.commissionAmt;
+                    sumNet += r.net;
+                });
+                const overallMargin = sumRevenue !== 0 ? (sumNet / sumRevenue) * 100 : 0;
+
+                document.getElementById('sumQty').textContent = fmt(sumQty);
+                document.getElementById('sumCost').textContent = fmt(sumCost);
+                document.getElementById('sumRevenue').textContent = fmt(sumRevenue);
+                document.getElementById('sumCommission').textContent = fmt(sumCommission);
+
+                const sumNetEl = document.getElementById('sumNet');
+                sumNetEl.textContent = fmt(sumNet);
+                sumNetEl.className = 'summary-card-value' + (sumNet < 0 ? ' danger' : '');
+
+                const sumMarginEl = document.getElementById('sumMargin');
+                sumMarginEl.textContent = fmt(overallMargin) + '%';
+                sumMarginEl.className = 'summary-card-value' + (overallMargin < 0 ? ' danger' : '');
+            }
+
+            document.getElementById('itemsBody').addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-action="delete"]');
+                if (!btn) return;
+                const idx = Number(btn.getAttribute('data-idx'));
+                state.items.splice(idx, 1);
+                if (state.items.length === 0) state.items.push(blankItem());
+                saveState();
+                render();
+            });
+
+            document.getElementById('addRowBtn').addEventListener('click', () => {
+                state.items.push(blankItem());
+                saveState();
+                render();
+            });
+
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                if (!confirm('確定要清空全部商品資料嗎？此動作無法復原。')) return;
+                state.items = [blankItem(), blankItem(), blankItem()];
+                saveState();
+                render();
+            });
+
+            document.getElementById('commissionRate').addEventListener('input', (e) => {
+                state.commissionRate = num(e.target.value);
+                saveState();
+                render();
+            });
+
+            document.getElementById('exportCsvBtn').addEventListener('click', () => {
+                const header = ['商品名稱', '庫存數量', '單位成本', '單位售價', '總成本', '總營收', '平台抽成金額', '淨收入', '淨利率(%)'];
+                const rows = state.items.map((item) => {
+                    const r = computeRow(item);
+                    return [
+                        item.name || '',
+                        num(item.qty),
+                        num(item.cost),
+                        num(item.price),
+                        r.totalCost.toFixed(2),
+                        r.totalRevenue.toFixed(2),
+                        r.commissionAmt.toFixed(2),
+                        r.net.toFixed(2),
+                        r.margin.toFixed(2)
+                    ];
+                });
+
+                const csv = [header, ...rows]
+                    .map(row => row.map(cell => {
+                        const s = String(cell);
+                        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+                    }).join(','))
+                    .join('\n');
+
+                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'inventory-calc.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            function parseCSVText(text) {
+                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+                const rows = [];
+                let field = '', row = [], inQuotes = false;
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    if (inQuotes) {
+                        if (char === '"') {
+                            if (text[i + 1] === '"') { field += '"'; i++; }
+                            else { inQuotes = false; }
+                        } else {
+                            field += char;
+                        }
+                    } else if (char === '"') {
+                        inQuotes = true;
+                    } else if (char === ',') {
+                        row.push(field); field = '';
+                    } else if (char === '\r') {
+                        // 忽略，交給 \n 處理換行
+                    } else if (char === '\n') {
+                        row.push(field); rows.push(row); row = []; field = '';
+                    } else {
+                        field += char;
+                    }
+                }
+                if (field.length || row.length) { row.push(field); rows.push(row); }
+                return rows;
+            }
+
+            document.getElementById('importCsvBtn').addEventListener('click', () => {
+                document.getElementById('csvFileInput').click();
+            });
+
+            document.getElementById('csvFileInput').addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    let rows;
+                    try {
+                        rows = parseCSVText(String(ev.target.result)).filter(r => r.length && r.some(c => c !== ''));
+                    } catch (err) {
+                        alert('CSV 解析失敗，請確認檔案格式。');
+                        return;
+                    }
+
+                    if (!rows.length) {
+                        alert('CSV 內容是空的或無法解析。');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    let startIdx = 0;
+                    if (rows[0][0] && rows[0][0].trim() === '商品名稱') startIdx = 1;
+
+                    const imported = [];
+                    for (let i = startIdx; i < rows.length; i++) {
+                        const r = rows[i];
+                        const name = (r[0] || '').trim();
+                        const qty = (r[1] || '').trim();
+                        const cost = (r[2] || '').trim();
+                        const price = (r[3] || '').trim();
+                        if (!name && !qty && !cost && !price) continue;
+                        imported.push({ name, qty, cost, price });
+                    }
+
+                    if (!imported.length) {
+                        alert('沒有可匯入的商品資料。');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    if (confirm(`將匯入 ${imported.length} 筆商品資料，並覆蓋目前的清單，確定嗎？`)) {
+                        state.items = imported;
+                        saveState();
+                        render();
+                    }
+
+                    e.target.value = '';
+                };
+                reader.readAsText(file, 'utf-8');
+            });
+
+            document.getElementById('commissionRate').value = state.commissionRate;
+            render();
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+
+    </body>
+
+</html>

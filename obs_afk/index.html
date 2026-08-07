@@ -12,6 +12,8 @@
 
         <link rel="icon" href="https://haer0248.me/favicon.ico" />
         <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <link rel="stylesheet" href="https://widgets.nekolive.net/assets/bootstrap.min.css" />
     </head>
 
     <body>
@@ -36,6 +38,51 @@
                 align-items: center;
                 justify-content: center;
                 background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            html {
+                overflow-y: auto;
+            }
+
+            body.edit-mode {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+                padding: 24px;
+                background-color: #141418;
+                overflow-y: auto;
+            }
+
+            body.edit-mode .preview-box {
+                container-type: inline-size;
+                flex: 1 1 480px;
+                max-width: 720px;
+                aspect-ratio: 16 / 9;
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            body.edit-mode .preview-box .char {
+                font-size: 14cqw;
+            }
+
+            body.edit-mode .preview-box .subtitle {
+                font-size: 3.7cqw;
+            }
+
+            body.edit-mode #content {
+                position: static !important;
+                flex: 1 1 380px;
+                max-width: 480px;
+                align-self: stretch;
+                max-height: 100%;
+                overflow-y: auto;
             }
 
             .wrapper {
@@ -72,124 +119,229 @@
             }
         </style>
         
-        <div class="wrapper">
-            <div class="chars" id="chars"></div>
-            <div class="subtitle" id="subtitle"></div>
+        <div class="preview-box" id="previewBox">
+            <div class="wrapper">
+                <div class="chars" id="chars"></div>
+                <div class="subtitle" id="subtitle"></div>
+            </div>
         </div>
 
+        <div class="container mb-3" id="content" style="display:none; position:relative; z-index:10; color:#fff;">
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-info">【幫助模式】幫助模式已自動啟用，在 OBS 使用此幫助將會自動隱藏，無需輸入任何設定。</div>
+
+                    <form id="afkForm">
+                        <div class="mb-3">
+                            <label for="text" class="form-label">主要文字</label>
+                            <input type="text" class="form-control" id="text" name="text" placeholder="離席中...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subtitleInput" class="form-label">副標文字</label>
+                            <input type="text" class="form-control" id="subtitleInput" name="subtitle" placeholder="Be right back...">
+                        </div>
+
+                        <button type="button" data-submit class="btn btn-success">儲存並套用設定</button>
+                        <p class="form-text">按下後畫面預覽會立即更新；如果已經設定雲端同步，OBS 裡的來源畫面也會同步更新，不需要重新貼網址。</p>
+
+                        <div class="mb-3">
+                            <label for="obsUrl" class="form-label">OBS 瀏覽器來源網址（只需要貼一次）</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" readonly id="obsUrl">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleObsUrl">顯示</button>
+                                <button class="btn btn-outline-secondary" type="button" id="copyObsUrl">複製</button>
+                            </div>
+                        </div>
+
+                        <details class="mb-3">
+                            <summary class="form-text" style="cursor:pointer;">進階：沒有設定雲端同步？改用傳統網址參數</summary>
+                            <p class="form-text mt-2">傳統網址參數：</p>
+                            <textarea class="form-control" readonly id="preview" cols="30" rows="2"></textarea>
+                        </details>
+
+                        <div id="syncPanelMount"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="/static/shared/sync-server-config.js"></script>
+        <script src="/static/shared/sync-store.js"></script>
+        <script src="/static/shared/sync-panel.js"></script>
+
         <script>
-            const urlParams = new URLSearchParams(window.location.search);
+            const DEFAULTS = { text: '離席中...', subtitle: 'Be right back...' };
 
-            (function () {
-                const text = urlParams.get('text');
-                const string = text || '離席中...';
+            function getLegacyUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                const out = {};
+                let has = false;
+                ['text', 'subtitle'].forEach(key => {
+                    if (params.has(key)) { out[key] = params.get(key); has = true; }
+                });
+                return has ? out : null;
+            }
 
+            function isOBSMode() {
+                return navigator.userAgent.includes('OBS') || new URLSearchParams(window.location.search).get('obs') === '1';
+            }
+
+            const sync = new NekoSync('obs-afk', { defaults: DEFAULTS, schemaVersion: 1 });
+            let config = sync.init();
+            const legacy = getLegacyUrlParams();
+            if (sync.migrateFromLegacyIfEmpty(legacy)) config = sync.loadLocal();
+
+            let cycleToken = 0;
+
+            function renderChars(text) {
                 const container = document.getElementById('chars');
-                [...string].forEach(ch => {
+                container.innerHTML = '';
+                [...text].forEach(ch => {
                     const span = document.createElement('span');
                     span.className = 'char';
                     span.textContent = ch;
                     container.appendChild(span);
                 });
+            }
 
-                const subtitle = urlParams.get('subtitle');
+            function applyConfig(cfg) {
+                cycleToken++;
+                const myToken = cycleToken;
+
+                renderChars(cfg.text || DEFAULTS.text);
+                document.getElementById('subtitle').textContent = cfg.subtitle || DEFAULTS.subtitle;
+
+                const chars = document.querySelectorAll('.char');
                 const subtitleEl = document.getElementById('subtitle');
-                subtitleEl.textContent = subtitle || 'Be right back...';
-            })();
+                const FADE_CHAR = 400;
+                const CHAR_DELAY = 100;
+                const SHOW_DURATION = 10000;
+
+                function fadeInChar(el, delay) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            el.style.transition = `opacity ${FADE_CHAR}ms ease`;
+                            el.style.opacity = '1';
+                            setTimeout(resolve, FADE_CHAR);
+                        }, delay);
+                    });
+                }
+
+                function flicker() {
+                    return new Promise(resolve => {
+                        const steps = [
+                            { opacity: '0.3', duration: 350 },
+                            { opacity: '1', duration: 300 },
+                            { opacity: '0.2', duration: 400 },
+                            { opacity: '0.9', duration: 250 },
+                            { opacity: '0.1', duration: 350 },
+                            { opacity: '0.8', duration: 300 },
+                            { opacity: '0', duration: 500 },
+                        ];
+                        let t = 0;
+                        steps.forEach(({ opacity, duration }) => {
+                            setTimeout(() => {
+                                chars.forEach(el => {
+                                    el.style.transition = `opacity ${duration}ms ease`;
+                                    el.style.opacity = opacity;
+                                });
+                                subtitleEl.style.transition = `opacity ${duration}ms ease`;
+                                subtitleEl.style.opacity = opacity;
+                            }, t);
+                            t += duration;
+                        });
+                        setTimeout(resolve, t);
+                    });
+                }
+
+                async function cycle() {
+                    if (myToken !== cycleToken) return;
+                    chars.forEach(el => { el.style.transition = 'none'; el.style.opacity = '0'; });
+                    subtitleEl.style.transition = 'none';
+                    subtitleEl.style.opacity = '0';
+                    await new Promise(r => setTimeout(r, 50));
+                    if (myToken !== cycleToken) return;
+
+                    for (let i = 0; i < chars.length; i++) {
+                        if (myToken !== cycleToken) return;
+                        await fadeInChar(chars[i], i * CHAR_DELAY);
+                    }
+                    if (myToken !== cycleToken) return;
+
+                    subtitleEl.style.transition = `opacity ${FADE_CHAR}ms ease`;
+                    subtitleEl.style.opacity = '1';
+
+                    await new Promise(r => setTimeout(r, SHOW_DURATION));
+                    if (myToken !== cycleToken) return;
+                    await flicker();
+                    await new Promise(r => setTimeout(r, 400));
+                    cycle();
+                }
+
+                cycle();
+            }
+
+            function fillForm(cfg) {
+                document.getElementById('text').value = cfg.text || '';
+                document.getElementById('subtitleInput').value = cfg.subtitle || '';
+            }
+
+            function readForm() {
+                return {
+                    text: document.getElementById('text').value || DEFAULTS.text,
+                    subtitle: document.getElementById('subtitleInput').value || DEFAULTS.subtitle
+                };
+            }
+
+            function buildLegacyUrl(cfg) {
+                const params = new URLSearchParams();
+                params.set('text', cfg.text);
+                params.set('subtitle', cfg.subtitle);
+                params.set('obs', '1');
+                return location.origin + location.pathname + '?' + params.toString();
+            }
 
             document.addEventListener('DOMContentLoaded', function () {
-                (function () {
-                    const chars = document.querySelectorAll('.char');
-                    const subtitleEl = document.getElementById('subtitle');
-                    const FADE_CHAR = 400;
-                    const CHAR_DELAY = 100;
-                    const SHOW_DURATION = 10000;
-                    const FADE_OUT = 800;
+                if (!isOBSMode()) {
+                    document.body.classList.add('edit-mode');
+                    document.getElementById('content').style.display = 'block';
+                    fillForm(config);
+                    document.getElementById('preview').value = buildLegacyUrl(config);
+                    document.getElementById('obsUrl').value = sync.buildObsSourceUrl();
+                    NekoMask.attach(document.getElementById('obsUrl'), document.getElementById('toggleObsUrl'));
 
-                    function fadeInChar(el, delay) {
-                        return new Promise(resolve => {
-                            setTimeout(() => {
-                                el.style.transition = `opacity ${FADE_CHAR}ms ease`;
-                                el.style.opacity = '1';
-                                setTimeout(resolve, FADE_CHAR);
-                            }, delay);
-                        });
+                    document.querySelector('button[data-submit]').addEventListener('click', function () {
+                        config = sync.save(readForm());
+                        document.getElementById('preview').value = buildLegacyUrl(config);
+                    });
+
+                    document.getElementById('copyObsUrl').addEventListener('click', function () {
+                        const input = document.getElementById('obsUrl');
+                        input.select();
+                        try { navigator.clipboard.writeText(input.value); } catch (e) { document.execCommand('copy'); }
+                        this.textContent = '已複製！';
+                        setTimeout(() => { this.textContent = '複製'; }, 1500);
+                    });
+
+                    document.getElementById('preview').addEventListener('click', function () {
+                        this.select();
+                        document.execCommand('copy');
+                        this.classList.add('is-valid');
+                        setTimeout(() => { this.className = 'form-control'; }, 3000);
+                    });
+
+                    NekoSyncPanel.mount(document.getElementById('syncPanelMount'), sync);
+                }
+
+                applyConfig(config);
+                sync.onChange((newConfig, source) => {
+                    config = newConfig;
+                    applyConfig(config);
+                    if (!isOBSMode() && source === 'remote') {
+                        fillForm(config);
+                        document.getElementById('preview').value = buildLegacyUrl(config);
                     }
-
-                    function flicker() {
-                        return new Promise(resolve => {
-                            const steps = [{
-                                opacity: '0.3',
-                                duration: 350
-                            },
-                            {
-                                opacity: '1',
-                                duration: 300
-                            },
-                            {
-                                opacity: '0.2',
-                                duration: 400
-                            },
-                            {
-                                opacity: '0.9',
-                                duration: 250
-                            },
-                            {
-                                opacity: '0.1',
-                                duration: 350
-                            },
-                            {
-                                opacity: '0.8',
-                                duration: 300
-                            },
-                            {
-                                opacity: '0',
-                                duration: 500
-                            },
-                            ];
-                            let t = 0;
-                            steps.forEach(({
-                                opacity,
-                                duration
-                            }) => {
-                                setTimeout(() => {
-                                    chars.forEach(el => {
-                                        el.style.transition = `opacity ${duration}ms ease`;
-                                        el.style.opacity = opacity;
-                                    });
-                                    subtitleEl.style.transition = `opacity ${duration}ms ease`;
-                                    subtitleEl.style.opacity = opacity;
-                                }, t);
-                                t += duration;
-                            });
-                            setTimeout(resolve, t);
-                        });
-                    }
-
-                    async function cycle() {
-                        chars.forEach(el => {
-                            el.style.transition = 'none';
-                            el.style.opacity = '0';
-                        });
-                        subtitleEl.style.transition = 'none';
-                        subtitleEl.style.opacity = '0';
-                        await new Promise(r => setTimeout(r, 50));
-
-                        for (let i = 0; i < chars.length; i++) {
-                            await fadeInChar(chars[i], i * CHAR_DELAY);
-                        }
-
-                        subtitleEl.style.transition = `opacity ${FADE_CHAR}ms ease`;
-                        subtitleEl.style.opacity = '1';
-
-                        await new Promise(r => setTimeout(r, SHOW_DURATION));
-                        await flicker();
-                        await new Promise(r => setTimeout(r, 400));
-                        cycle();
-                    }
-
-                    cycle();
-                })();
+                });
             });
         </script>
 
