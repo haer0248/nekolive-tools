@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+    <head>
+        <title>留言卡片圖片產生器 ◃ 網頁小工具 😺 tools.nekolive.net</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <meta name="author" content="猫又おにぎり (https://haer0248.me/)" />
+
+        <meta charset="utf-8" />
+        <meta name="theme-color" content="#91beff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no" />
+
+        <link rel="icon" href="https://haer0248.me/favicon.ico" />
+        <link rel="shortcut icon" href="https://haer0248.me/favicon.ico" />
+
+        <link rel="stylesheet" href="/static/styles.min.css" />
+        <link rel="stylesheet" href="/static/superchar-card/style.min.css" />
+    </head>
+
+    <body>
+
+        <a href="https://github.com/haer0248/nekolive-tools" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+        <div id="mainContent">
+            <nav class="site-nav">
+                <div class="site-nav-inner">
+                    <a href="https://tools.nekolive.net/" class="site-nav-brand">線上小工具</a>
+                </div>
+            </nav>
+
+            <div class="page-wide">
+                <h1 class="page-title">留言卡片圖片產生器</h1>
+
+                <div class="sc-layout">
+
+                    <div>
+                        <div class="section-label">卡片內容</div>
+
+                        <div class="form-group">
+                            <label for="fStyle">樣式</label>
+                            <select id="fStyle">
+                                <option value="1">樣式一：上下分區，名稱與金額直排</option>
+                                <option value="2">樣式二：單色圓角，名稱與金額橫排</option>
+                            </select>
+                        </div>
+
+                        <div class="sc-grid-2">
+                            <div class="form-group">
+                                <label for="fName">名稱</label>
+                                <input type="text" id="fName" maxlength="60" placeholder="匿名">
+                            </div>
+                            <div class="form-group">
+                                <label for="fAmount">金額</label>
+                                <input type="number" id="fAmount" min="0" step="any" placeholder="150">
+                            </div>
+                        </div>
+
+                        <div class="sc-grid-2">
+                            <div class="form-group">
+                                <label for="fCurrency">幣別</label>
+                                <input type="text" id="fCurrency" maxlength="8" list="currencyList" placeholder="NT$">
+                                <datalist id="currencyList">
+                                    <option value="NT$"></option>
+                                    <option value="$"></option>
+                                    <option value="US$"></option>
+                                    <option value="¥"></option>
+                                    <option value="JP¥"></option>
+                                    <option value="₩"></option>
+                                    <option value="€"></option>
+                                    <option value="£"></option>
+                                    <option value="HK$"></option>
+                                    <option value="CN¥"></option>
+                                </datalist>
+                                <p class="form-hint">直接接在金額前面，跟小工具一樣不留空白。留空就只顯示數字。</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="fAvatarMode">頭像</label>
+                                <select id="fAvatarMode">
+                                    <option value="default">內建預設頭像</option>
+                                    <option value="upload">上傳圖片</option>
+                                    <option value="none">不顯示</option>
+                                </select>
+                                <input type="file" id="fAvatarFile" accept="image/*" class="hidden" style="margin-top:0.5rem;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fComment">留言</label>
+                            <textarea id="fComment" rows="3" placeholder="這是一筆贊助測試。"></textarea>
+                            <p class="form-hint">留空的話就不會畫出留言區塊，只剩上面那一條。可以直接按 Enter 換行。</p>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="sc-check-row">
+                                <label class="sc-check"><input type="checkbox" id="fShowName" checked> 顯示名稱</label>
+                                <label class="sc-check"><input type="checkbox" id="fShowAmount" checked> 顯示金額</label>
+                                <label class="sc-check"><input type="checkbox" id="fComma" checked> 金額千分位</label>
+                            </div>
+                        </div>
+
+                        <div class="section-label">尺寸</div>
+
+                        <div class="form-group">
+                            <div class="sc-check-row">
+                                <label class="sc-check"><input type="checkbox" id="fAutoWidth" checked> 自動寬度（依內容長度）</label>
+                            </div>
+                        </div>
+
+                        <div class="sc-grid-2">
+                            <div class="form-group">
+                                <label for="fWidth" id="widthLabel">最大寬度 (px)</label>
+                                <input type="number" id="fWidth" min="200" max="1600" step="10" value="440">
+                                <p class="form-hint" id="widthHint">－</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="fRadius">圓角 (px)</label>
+                                <input type="number" id="fRadius" min="0" max="60" step="1" value="4">
+                                <p class="form-hint">樣式一原本是 4px，樣式二是 12px，切換樣式會自動帶回預設值。</p>
+                            </div>
+                        </div>
+
+                        <div class="section-label">顏色</div>
+
+                        <div class="sc-grid-2">
+                            <div class="form-group">
+                                <label for="fSource">配色</label>
+                                <select id="fSource">
+                                    <option value="youtube">YouTube 超級留言原色（7 階）</option>
+                                    <option value="platform">Nekolive 自訂漸層色（9 階）</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="baseBox">
+                                <label for="fBase">金額級距</label>
+                                <select id="fBase">
+                                    <option value="twd">台幣 NT$</option>
+                                    <option value="usd">美金 US$</option>
+                                    <option value="jpy">日圓 ¥</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="colorMode" value="auto" checked> 自動（依金額）</label>
+                                <label class="radio-label"><input type="radio" name="colorMode" value="tier"> 指定色階</label>
+                                <label class="radio-label"><input type="radio" name="colorMode" value="custom"> 自訂顏色</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="autoBox">
+                            <div class="sc-auto-hint">
+                                <span class="sc-swatch" id="autoChip"><span></span><span></span></span>
+                                <span id="autoText">－</span>
+                            </div>
+                            <p class="form-hint" id="autoHint">－</p>
+                        </div>
+
+                        <div class="form-group hidden" id="tierBox">
+                            <div class="sc-tier-grid" id="tierGrid"></div>
+                        </div>
+
+                        <div class="hidden" id="customBox">
+                            <div class="sc-grid-2">
+                                <div class="form-group">
+                                    <label for="fHead1">標題底色（起）</label>
+                                    <input type="color" id="fHead1" value="#FFB300">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fHead2">標題底色（迄）</label>
+                                    <input type="color" id="fHead2" value="#FFB300">
+                                </div>
+                            </div>
+                            <div class="sc-grid-2" id="bodyColorRow">
+                                <div class="form-group">
+                                    <label for="fBody1">留言底色（起）</label>
+                                    <input type="color" id="fBody1" value="#FFCA28">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fBody2">留言底色（迄）</label>
+                                    <input type="color" id="fBody2" value="#FFCA28">
+                                </div>
+                            </div>
+                            <div class="sc-grid-2">
+                                <div class="form-group">
+                                    <label for="fText">文字顏色</label>
+                                    <input type="color" id="fText" value="#000000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fOutline">文字描邊顏色</label>
+                                    <input type="color" id="fOutline" value="#FFFFFF">
+                                </div>
+                            </div>
+                            <p class="form-hint" style="margin:-0.5rem 0 1.25rem;">兩個底色設一樣就是純色，不一樣就是 65 度漸層。</p>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="sc-check-row">
+                                <label class="sc-check"><input type="checkbox" id="fUseOutline"> 文字描邊</label>
+                            </div>
+                            <p class="form-hint">YouTube 預設沒有描邊，但因為字不明顯，所以新增這個選項。</p>
+                        </div>
+
+                        <details class="sc-fold">
+                            <summary>進階：輸出</summary>
+                            <div class="sc-fold-body">
+                                <div class="sc-grid-3">
+                                    <div class="form-group">
+                                        <label for="fScale">輸出倍率</label>
+                                        <select id="fScale">
+                                            <option value="1">1x</option>
+                                            <option value="2" selected>2x</option>
+                                            <option value="3">3x</option>
+                                            <option value="4">4x</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fBgMode">圖片背景</label>
+                                        <select id="fBgMode">
+                                            <option value="transparent">透明</option>
+                                            <option value="color">自訂顏色</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fBgColor">背景顏色</label>
+                                        <input type="color" id="fBgColor" value="#27262B">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="max-width:220px;">
+                                    <label for="fPadding">四周留白 (px)</label>
+                                    <input type="number" id="fPadding" min="0" max="200" step="2" value="0">
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="sc-preview-col">
+                        <div class="section-label">預覽</div>
+                        <div class="sc-stage">
+                            <canvas id="preview"></canvas>
+                        </div>
+                        <div class="sc-meta">
+                            <span id="metaSize">－</span>
+                            <span id="metaTier">－</span>
+                        </div>
+
+                        <div class="btn-row" style="margin-top:1rem;">
+                            <button class="btn btn-primary" id="btnDownload">下載 PNG</button>
+                            <button class="btn" id="btnCopy">複製圖片</button>
+                            <button class="btn btn-danger" id="btnReset">重設</button>
+                        </div>
+                        <div class="sc-toast" id="toast"></div>
+                        <p class="form-hint" style="margin-top:0.75rem;">輸出的 PNG 預設是透明背景，可以直接疊到縮圖或貼文上。要換底色或留白請開「進階：輸出」。</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <footer class="site-footer">
+                <div class="site-footer-inner">
+                    Made with 🩵 <a href="https://haer0248.me/" target="_blank" rel="noopener noreferrer">猫又おにぎり (NekomataOnigiri)</a> • Powered by <a href="https://nekolive.net/" target="_blank" rel="noopener noreferrer">Nekolive.net</a>
+                </div>
+            </footer>
+        </div>
+
+        <script src="/static/superchar-card/app.min.js"></script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E5D30J36L6"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+
+            gtag('config', 'G-E5D30J36L6');
+        </script>
+
+    </body>
+
+</html>
