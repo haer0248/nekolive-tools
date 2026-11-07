@@ -1,5 +1,32 @@
 // ── State ──
 const defaultBotNames = ['streamelements', 'nightbot', 'moobot', 'streamlabs', 'sery_bot'];
+const MONTH_TIER_KEYS = { '層級一': 't1', '層級二': 't2', '層級三': 't3' };
+
+function defaultMonthBonus() {
+    return {
+        enabled: false,
+        basis: 'tenure',
+        tiers: {
+            t1: { every: 6, step: 0.5, max: 20 },
+            t2: { every: 6, step: 0.5, max: 20 },
+            t3: { every: 6, step: 0.5, max: 20 }
+        }
+    };
+}
+
+function normalizeMonthBonus(m) {
+    const d = defaultMonthBonus();
+    if (!m || typeof m !== 'object') return d;
+    const tiers = {};
+    ['t1', 't2', 't3'].forEach(k => {
+        tiers[k] = Object.assign({}, d.tiers[k], (m.tiers && m.tiers[k]) || {});
+    });
+    return {
+        enabled: !!m.enabled,
+        basis: m.basis === 'streak' ? 'streak' : 'tenure',
+        tiers
+    };
+}
 
 let state = {
     sessionId: null,
@@ -17,7 +44,8 @@ let state = {
         founder: 1
     },
     recurringOnly: false,
-    excludeWinners: false
+    excludeWinners: false,
+    monthBonus: defaultMonthBonus()
 };
 let conflicts = [],
     conflictIdx = 0,
@@ -70,6 +98,7 @@ function saveSession() {
         mults: state.mults,
         recurringOnly: state.recurringOnly,
         excludeWinners: state.excludeWinners,
+        monthBonus: state.monthBonus,
         botNames: state.botNames,
         updatedAt: Date.now()
     };
@@ -97,6 +126,7 @@ function loadSession(id) {
     }, s.mults || {});
     state.recurringOnly = s.recurringOnly || false;
     state.excludeWinners = s.excludeWinners || false;
+    state.monthBonus = normalizeMonthBonus(s.monthBonus);
     return true;
 }
 
@@ -128,6 +158,7 @@ function initDefaultSession() {
         prime: 1,
         founder: 1
     };
+    state.monthBonus = defaultMonthBonus();
     saveSession();
 }
 
@@ -154,6 +185,7 @@ function applyState() {
     });
     applyRecurringOnlyUI();
     applyExcludeWinnersUI();
+    applyMonthBonusUI();
     tablePage = 1;
     tableFilter = '';
     renderBotList();
@@ -227,6 +259,7 @@ function saveMults() {
     state.mults.gift = parseFloat(document.getElementById('mult-gift').value) || 1;
     state.mults.prime = parseFloat(document.getElementById('mult-prime').value) || 1;
     state.mults.founder = parseFloat(document.getElementById('mult-founder').value) || 1;
+    updateMonthBonusPreview();
     saveSession();
     renderTableStats();
     refreshDraw();
@@ -335,7 +368,114 @@ function getTickets(s) {
     if (s.excluded) return 0;
     if (state.botNames.includes(s.username.toLowerCase())) return 0;
     const base = s.customMult !== undefined ? s.customMult : getTierBase(s.tier);
-    return Math.max(0, Math.round(base * getSubMult(s.subType) * (isFounder(s) ? state.mults.founder : 1)));
+    const t = base * getMonthMult(s) * getSubMult(s.subType) * (isFounder(s) ? state.mults.founder : 1);
+    return Math.max(0, Math.round(t * 100) / 100);
+}
+
+function getMonthCount(s) {
+    const v = state.monthBonus.basis === 'streak' ? s.streak : s.tenure;
+    return Math.max(0, parseInt(v) || 0);
+}
+
+function calcMonthMult(cfg, months) {
+    const every = parseInt(cfg.every) || 0;
+    const step = parseFloat(cfg.step) || 0;
+    const max = Math.max(1, parseFloat(cfg.max) || 1);
+    if (every <= 0 || step <= 0) return 1;
+    const mult = 1 + Math.floor(months / every) * step;
+    return Math.round(Math.min(max, mult) * 100) / 100;
+}
+
+function getMonthMult(s) {
+    const mb = state.monthBonus;
+    if (!mb || !mb.enabled) return 1;
+    const cfg = mb.tiers[MONTH_TIER_KEYS[s.tier] || 't1'];
+    if (!cfg) return 1;
+    return calcMonthMult(cfg, getMonthCount(s));
+}
+
+function formatMult(v) {
+    return '×' + (Math.round(v * 100) / 100);
+}
+
+function toggleMonthBonus() {
+    state.monthBonus.enabled = !state.monthBonus.enabled;
+    applyMonthBonusUI();
+    afterMonthBonusChange();
+}
+
+function setMonthBasis(v) {
+    state.monthBonus.basis = v === 'streak' ? 'streak' : 'tenure';
+    afterMonthBonusChange();
+}
+
+function setMonthTier(key, field, v) {
+    const cfg = state.monthBonus.tiers[key];
+    if (!cfg) return;
+    if (field === 'every') cfg.every = Math.max(1, Math.min(120, parseInt(v) || 1));
+    if (field === 'step') cfg.step = Math.max(0, Math.min(99, Math.round((parseFloat(v) || 0) * 100) / 100));
+    if (field === 'max') cfg.max = Math.max(1, Math.min(99, Math.round((parseFloat(v) || 1) * 100) / 100));
+    const el = document.getElementById(`month-${key}-${field}`);
+    if (el) el.value = cfg[field];
+    afterMonthBonusChange();
+}
+
+function afterMonthBonusChange() {
+    updateMonthBonusPreview();
+    saveSession();
+    renderTableStats();
+    refreshDraw();
+    if (document.getElementById('page-settings').classList.contains('active')) {
+        renderOverrides();
+    }
+}
+
+function applyMonthBonusUI() {
+    const mb = state.monthBonus;
+    const toggle = document.getElementById('month-bonus-toggle');
+    if (!mb || !toggle) return;
+    const on = mb.enabled;
+    const knob = document.getElementById('month-bonus-knob');
+    const label = document.getElementById('month-bonus-label');
+    toggle.style.background = on ? 'var(--accent)' : 'var(--bg4)';
+    toggle.style.borderColor = on ? 'var(--accent)' : 'var(--border2)';
+    knob.style.left = on ? '18px' : '2px';
+    knob.style.background = on ? '#06080f' : 'var(--text3)';
+    label.textContent = on ? '開啟' : '關閉';
+    label.style.color = on ? 'var(--accent)' : 'var(--text3)';
+    document.getElementById('month-basis').value = mb.basis;
+    ['t1', 't2', 't3'].forEach(k => {
+        ['every', 'step', 'max'].forEach(f => {
+            const el = document.getElementById(`month-${k}-${f}`);
+            if (el) el.value = mb.tiers[k][f];
+        });
+    });
+    const body = document.getElementById('month-bonus-body');
+    if (body) {
+        body.style.opacity = on ? '1' : '0.4';
+        body.style.pointerEvents = on ? '' : 'none';
+    }
+    updateMonthBonusPreview();
+}
+
+function updateMonthBonusPreview() {
+    if (!state.monthBonus) return;
+    ['t1', 't2', 't3'].forEach(k => {
+        const el = document.getElementById(`month-${k}-preview`);
+        if (!el) return;
+        const cfg = state.monthBonus.tiers[k];
+        const every = parseInt(cfg.every) || 0;
+        const step = parseFloat(cfg.step) || 0;
+        const max = Math.max(1, parseFloat(cfg.max) || 1);
+        if (every <= 0 || step <= 0 || max <= 1) {
+            el.textContent = '不加成';
+            return;
+        }
+        const samples = [12, 24, 36].map(m => `${m} 個月 ${formatMult(calcMonthMult(cfg, m))}`);
+        const capMonths = Math.ceil(Math.round((max - 1) / step * 1e6) / 1e6) * every;
+        const maxTickets = Math.round(state.mults[k] * max * 100) / 100;
+        el.textContent = `${samples.join(' · ')} · ${capMonths} 個月達上限，最多 ${maxTickets} 票`;
+    });
 }
 
 function prizeUsedCount(prizeId) {
@@ -572,14 +712,15 @@ function addManualSingle() {
     const tierRaw = document.getElementById('manual-tier').value;
     const subType = document.getElementById('manual-subtype').value;
     const founder = false;
-    const tenure = 1;
+    const monthsRaw = parseInt(document.getElementById('manual-months').value);
+    const tenure = isNaN(monthsRaw) ? 1 : Math.max(0, monthsRaw);
 
     const entry = {
         username,
         date: new Date().toISOString().split('T')[0],
         tier: normTier(tierRaw),
         tenure,
-        streak: 0,
+        streak: tenure,
         subType,
         founder,
         excluded: false
@@ -617,12 +758,14 @@ function addBulkManual(append = false) {
         if (!username) continue;
 
         const tierRaw = parts[1] || 'Tier1';
+        const months = parseInt(parts[2]);
+        const tenure = isNaN(months) ? 1 : Math.max(0, months);
         entries.push({
             username,
             date: new Date().toISOString().split('T')[0],
             tier: normTier(tierRaw),
-            tenure: 1,
-            streak: 0,
+            tenure,
+            streak: tenure,
             subType: defaultType,
             founder: 'No',
             excluded: false
@@ -834,8 +977,16 @@ function gotoTablePage(p) {
 }
 
 function setCustomMult(i, v) {
-    state.subscribers[i].customMult = Math.max(0, parseInt(v) || 0);
+    if (String(v).trim() === '') {
+        delete state.subscribers[i].customMult;
+    } else {
+        state.subscribers[i].customMult = Math.max(0, parseInt(v) || 0);
+    }
     saveSession();
+    renderTable();
+    if (document.getElementById('page-settings').classList.contains('active')) {
+        renderOverrides();
+    }
     refreshDraw();
 }
 
@@ -879,6 +1030,7 @@ function renderOverrides() {
             <td>${tierBadge(s.tier)}</td>
             <td>${typeBadge(s.subType)}</td>
             <td>${isFounder(s) ? '<span class="badge b-founder">是</span>' : '-'}</td>
+            <td>${getMonthMult(s) > 1 ? `<span class="chip" style="color:var(--text2)">${formatMult(getMonthMult(s))}</span>` : '-'}</td>
             <td><input type="number" value="${s.customMult !== undefined ? s.customMult : getTierBase(s.tier)}"
                 min="0" max="9999" style="width:70px;text-align:center;padding:4px 6px"
                 onchange="setCustomMult(${i},this.value)"></td>
@@ -1333,6 +1485,7 @@ function createSession() {
         prime: 1,
         founder: 1
     };
+    state.monthBonus = defaultMonthBonus();
     saveSession();
     applyState();
     document.getElementById('new-session-input').value = '';
@@ -1710,6 +1863,8 @@ function validateAndPreviewImport(data, filename) {
             mults: s.mults || {},
             recurringOnly: s.recurringOnly || false,
             excludeWinners: s.excludeWinners || false,
+            monthBonus: normalizeMonthBonus(s.monthBonus),
+            botNames: s.botNames || [...defaultBotNames],
             updatedAt: s.updatedAt || Date.now()
         };
     } else if (data._type === 'lottery_all_sessions_export' && data.sessions) {
